@@ -3,6 +3,7 @@
  */
 
 import { initMenu } from './menu.js';
+import { registerServiceWorker } from './pwa.js';
 
 const root = document.documentElement;
 
@@ -22,3 +23,6 @@ initMenu({
 requestAnimationFrame(() => {
   requestAnimationFrame(() => root.classList.remove('preload'));
 });
+
+// Instalación como app y modo sin conexión.
+registerServiceWorker();
