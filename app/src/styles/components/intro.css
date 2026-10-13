@@ -1,0 +1,167 @@
+/* ==========================================================================
+   intro.css — pantalla de inicio (carga + Continuar / Iniciar sesión).
+   Cubre toda la ventana por encima de la app hasta que intro.js la disuelve.
+
+   Aquí solo está el estado final de cada pieza. El movimiento (entradas, fundidos,
+   pulsación) vive en motion.css. El fondo y el logotipo los anima intro.js fotograma a
+   fotograma: solo transform en las manchas y atributos SVG en el logotipo.
+   ========================================================================== */
+
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  isolation: isolate;
+  contain: layout paint;
+  background: linear-gradient(180deg, var(--intro-navy) 0%, var(--intro-navy-light) 55%, var(--intro-navy) 100%);
+  color: var(--intro-ink);
+  font-family: var(--font-intro);
+}
+
+/* Al salir: transparente y fuera del árbol de accesibilidad. Con motion.css el cambio
+   se convierte en un fundido; sin él, es instantáneo. */
+.intro.is-leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---------- Fondo: manchas negro / azul ---------- */
+.intro-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.intro-blob {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--intro-mesh-size) * var(--k));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  will-change: transform;          /* la intro vive solo unos segundos y se elimina después */
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+.intro-blob--blue-a {
+  --k: 1.05;
+  background: radial-gradient(circle, rgba(var(--intro-blue), .8) 0%, rgba(var(--intro-blue), .35) 40%, transparent 70%);
+}
+.intro-blob--blue-b {
+  --k: .85;
+  background: radial-gradient(circle, rgba(var(--intro-blue-light), .6) 0%, rgba(var(--intro-blue-light), .25) 40%, transparent 70%);
+}
+.intro-blob--black-a {
+  --k: 2.1;
+  background: radial-gradient(circle, rgba(var(--intro-black), .98) 0%, rgba(var(--intro-black), .72) 40%, transparent 70%);
+}
+.intro-blob--black-b {
+  --k: 1.9;
+  background: radial-gradient(circle, rgba(var(--intro-black), .95) 0%, rgba(var(--intro-black), .65) 40%, transparent 70%);
+}
+
+/* ---------- Contenido ---------- */
+.intro-content {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: var(--safe-top) 20px calc(var(--safe-bottom) + 28px);
+}
+
+.intro-stage {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+
+.intro-logo {
+  display: block;
+  width: min(60vw, 240px, 48dvh);
+  height: auto;
+  overflow: visible;
+}
+.intro-body,
+.intro-dot,
+.intro-word { fill: var(--intro-ink); }
+.intro-word { font-family: var(--font-intro); font-weight: 700; }
+
+/* ---------- Botones y formulario ---------- */
+.intro-actions {
+  width: 100%;
+  max-width: 360px;
+  margin-inline: auto;
+}
+
+.intro-panel { display: grid; gap: 12px; }
+.intro-panel[hidden] { display: none; }
+
+.intro-btn {
+  width: 100%;
+  min-height: 56px;
+  border-radius: 20px;
+  background: var(--intro-glass);
+  color: var(--intro-ink);
+  font: 500 17px/1 var(--font-intro);
+  letter-spacing: .01em;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.intro-btn:disabled { opacity: .6; cursor: default; }
+
+/* Iniciar sesión: misma forma que Continuar, con menos peso visual */
+.intro-btn--outline {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.intro-btn--quiet {
+  min-height: 48px;
+  background: transparent;
+  color: rgba(255, 255, 255, .72);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+@media (hover: hover) {
+  .intro-btn:not(:disabled):hover { background: var(--intro-glass-hover); }
+  .intro-btn--outline:not(:disabled):hover { background: var(--intro-glass); }
+  .intro-btn--quiet:not(:disabled):hover { background: transparent; color: var(--intro-ink); }
+}
+
+.intro-label {
+  padding: 0 4px;
+  color: rgba(255, 255, 255, .8);
+  font-size: 14px;
+  letter-spacing: .04em;
+}
+
+.intro-input {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 20px;
+  background: var(--intro-field);
+  color: var(--intro-ink);
+  font: 500 17px/1 var(--font-intro);   /* 16 px o más: iOS no hace zoom al enfocar */
+}
+.intro-input::placeholder { color: rgba(255, 255, 255, .45); }
+.intro-input[aria-invalid="true"] { border-color: var(--intro-error); }
+
+.intro-error {
+  margin: 0;
+  padding: 0 4px;
+  color: var(--intro-error);
+  font-size: 14px;
+  line-height: 1.35;
+}
+.intro-error[hidden] { display: none; }
+
+.intro :is(.intro-btn, .intro-input):focus-visible {
+  outline: 3px solid var(--intro-ink);
+  outline-offset: 3px;
+}

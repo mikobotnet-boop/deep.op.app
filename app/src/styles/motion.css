@@ -9,16 +9,23 @@
    3. Lo que entra es más lento que lo que sale.
    4. `will-change` solo mientras se anima (la clase .is-animating la pone menu.js).
    5. Todo el movimiento está dentro de `prefers-reduced-motion: no-preference`.
-      Sin esa preferencia la app es idéntica pero instantánea.
+      Con movimiento reducido la app es idéntica pero sin desplazamientos; lo único que
+      se permite son fundidos (opacity / color), en el bloque `reduce` del final.
 
    Este archivo es prescindible: si se quita su <link>, la interfaz funciona igual.
    ========================================================================== */
 
-/* Durante el arranque no se anima el estado restaurado (ver main.js). */
-.preload *,
-.preload *::before,
-.preload *::after {
+/* Mientras `preload` está activo no se anima el estado restaurado de la app (ver main.js).
+   Solo afecta a .app: la pantalla de inicio tiene sus propias transiciones. */
+.preload .app *,
+.preload .app *::before,
+.preload .app *::after {
   transition: none !important;
+}
+
+/* Fundido puro: lo usan los dos modos (con y sin movimiento reducido) */
+@keyframes fade-in {
+  from { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -31,6 +38,9 @@
   }
   @keyframes slide-in {
     from { opacity: 0; translate: -8px 0; }
+  }
+  @keyframes panel-in {
+    from { opacity: 0; translate: 0 10px; }
   }
 
   /* ------------------------------------------------------------------------
@@ -160,6 +170,37 @@
   }
 
   /* ------------------------------------------------------------------------
+     Pantalla de inicio (intro)
+     El logotipo y el fondo los mueve intro.js; aquí van los botones y la salida.
+     Salida: primero se van el logotipo y los botones (con un leve acercamiento) y
+     después el fondo se disuelve mientras la interfaz entra por debajo. Solo opacity y scale.
+     ------------------------------------------------------------------------ */
+  .intro {
+    transition:
+      opacity var(--dur-intro-exit) var(--ease-standard) 80ms,
+      visibility 0s linear calc(var(--dur-intro-exit) + 80ms);
+  }
+  .intro-content {
+    transition:
+      opacity var(--dur-intro-content) var(--ease-standard),
+      scale var(--dur-intro-content) var(--ease-in-out);
+  }
+  .intro.is-leaving .intro-content { opacity: 0; scale: 1.04; }
+
+  /* --panel-delay: intro.js lo pone a 0 tras la primera aparición, para que al volver
+     desde el formulario los botones no esperen. */
+  .intro-home { animation: fade-in var(--dur-intro-cta) var(--ease-standard) var(--panel-delay, 300ms) backwards; }
+  .intro-login { animation: panel-in var(--dur-base) var(--ease-out) backwards; }
+
+  .intro-btn {
+    transition:
+      background-color var(--dur-base) var(--ease-standard),
+      color var(--dur-base) var(--ease-standard),
+      scale var(--dur-instant) var(--ease-out);
+  }
+  .intro-btn:not(:disabled):active { scale: .975; }
+
+  /* ------------------------------------------------------------------------
      Entrada inicial (empieza cuando se retira .preload)
      ------------------------------------------------------------------------ */
   html:not(.preload) .dock {
@@ -167,5 +208,43 @@
   }
   html:not(.preload) .side :is(.brand, .item) {
     animation: slide-in var(--dur-intro) var(--ease-out) calc(var(--i, 0) * var(--stagger) + 40ms) backwards;
+  }
+}
+
+/* ==========================================================================
+   Movimiento reducido: solo fundidos.
+   Sin desplazamientos, escalas ni animación continua. Un cambio de opacidad o de color
+   no es movimiento y ayuda a no percibir saltos bruscos (pantalla de inicio → interfaz,
+   cambio de ítem activo).
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+
+  /* La pantalla de inicio se disuelve en lugar de desaparecer de golpe */
+  .intro {
+    transition:
+      opacity var(--dur-fade) var(--ease-standard),
+      visibility 0s linear var(--dur-fade);
+  }
+  .intro-home,
+  .intro-login { animation: fade-in var(--dur-fade) var(--ease-standard) backwards; }
+
+  /* Ítem activo: el fondo y el color cambian con un fundido corto */
+  .item {
+    transition:
+      color var(--dur-fast) var(--ease-standard),
+      background-color var(--dur-fast) var(--ease-standard);
+  }
+  .dock .tab { transition: color var(--dur-fast) var(--ease-standard); }
+
+  /* Punto del dock: se funde (la escala cambia al terminar de desvanecerse, sin animarse) */
+  .dock .tab::after {
+    transition:
+      opacity var(--dur-fast) var(--ease-standard),
+      scale 0s linear var(--dur-fast);
+  }
+  .dock .tab.on::after {
+    transition:
+      opacity var(--dur-fast) var(--ease-standard),
+      scale 0s;
   }
 }

@@ -1,6 +1,6 @@
 # Deep op
 
-Interfaz de navegación de Deep op: barra de iconos (*rail*), menú completo (*drawer*), tirador (*handle*) y barra inferior (*dock*). HTML, CSS y JavaScript puros, sin dependencias ni paso de compilación, con animaciones pensadas para 60 FPS.
+Interfaz de navegación de Deep op: pantalla de inicio animada, barra de iconos (*rail*), menú completo (*drawer*), tirador (*handle*) y barra inferior (*dock*). HTML, CSS y JavaScript puros, sin dependencias ni paso de compilación, con animaciones pensadas para 60 FPS.
 
 ## Ejecutar en local
 
@@ -34,10 +34,14 @@ app/
 │  │     ├─ rail.css       barra de iconos
 │  │     ├─ drawer.css     menú completo
 │  │     ├─ handle.css     tirador que abre/cierra el menú
-│  │     └─ dock.css       barra inferior
+│  │     ├─ dock.css       barra inferior
+│  │     └─ intro.css      pantalla de inicio (logotipo, botones, formulario)
 │  ├─ scripts/
 │  │  ├─ main.js           punto de entrada
 │  │  ├─ menu.js           abrir / cerrar
+│  │  ├─ nav.js            ítem activo en el menú y en la barra inferior
+│  │  ├─ intro.js          pantalla de inicio: animación, Continuar / Iniciar sesión, salida
+│  │  ├─ session.js        sesión del usuario (local por ahora)
 │  │  ├─ storage.js        localStorage seguro
 │  │  └─ pwa.js            registro del service worker
 │  └─ icons/
@@ -61,14 +65,25 @@ El orden de las hojas de estilo en `index.html` importa: de lo más global (`tok
 
 ## Accesibilidad
 
-- Si el sistema tiene activado "reducir movimiento", la app funciona igual pero sin animaciones.
+- Si el sistema tiene activado "reducir movimiento", la app funciona igual pero sin desplazamientos ni animación continua; solo quedan fundidos cortos (pantalla de inicio → interfaz, cambio de ítem activo). El logotipo de la pantalla de inicio aparece ya completo.
 - El menú cerrado no recibe foco (`inert`) y los lectores de pantalla no lo leen.
 - En pantallas pequeñas el menú arranca cerrado y `Escape` lo cierra.
 - El foco siempre es visible con el teclado.
 
+## Pantalla de inicio y sesión
+
+Al abrir la app se ve primero la pantalla de inicio (`intro.js` + `intro.css`): el logotipo se forma, la bolita se retira y aparece el nombre sobre un fondo de manchas azul y negro.
+
+- **Sin sesión:** al aparecer el logotipo se muestran **Continuar** e **Iniciar sesión**. Continuar entra sin cuenta; Iniciar sesión pide el correo y entra.
+- **Con sesión:** no hay botones. Al terminar la animación hace una breve pausa y entra sola.
+- **Salida sin corte:** la interfaz empieza a entrar (dock que sube, iconos en cascada) mientras la pantalla de inicio se disuelve; nunca hay un cambio brusco entre las dos.
+- Si la intro fallara por cualquier motivo, la app se muestra igualmente (red de seguridad en `main.js` y `layout.css`).
+
+**La sesión es local por ahora.** Deep op aún no tiene servidor: `session.js` solo comprueba que el correo tenga forma de correo y lo guarda en el dispositivo. No hay contraseña y no protege nada. Cuando exista un servidor, `signIn` en `session.js` es el único punto que cambia. `session.signOut()` ya existe, pero todavía no hay botón que lo use.
+
 ## Preferencias guardadas
 
-El estado abierto/cerrado del menú se guarda en `localStorage` (clave `deepop-menu`, solo en escritorio). Si el navegador bloquea el almacenamiento, la app sigue funcionando con el valor por defecto (menú abierto).
+El estado abierto/cerrado del menú se guarda en `localStorage` (clave `deepop-menu`, solo en escritorio) y la sesión en `deepop-session`. Si el navegador bloquea el almacenamiento, la app sigue funcionando con el valor por defecto (menú abierto); la sesión se mantiene mientras la pestaña siga abierta.
 
 ## Instalar como app (PWA)
 
@@ -80,7 +95,7 @@ Deep op se puede instalar en el móvil o el escritorio y abre sin conexión. Req
 
 Piezas que lo hacen posible: `manifest.webmanifest` (nombre, iconos, colores), `sw.js` (copia sin conexión) y `src/icons/app/`. Todas las rutas son relativas, así que funciona tanto en `.../repositorio/app/` como en la raíz del sitio.
 
-**Actualizaciones.** Con conexión, la app siempre carga la última versión publicada y renueva su copia; sin conexión usa la copia. Si añades o renombras archivos, actualiza la lista `PRECACHE` de `sw.js` y sube `VERSION` (`v1` → `v2`).
+**Actualizaciones.** Con conexión, la app siempre carga la última versión publicada y renueva su copia; sin conexión usa la copia. Si añades o renombras archivos, actualiza la lista `PRECACHE` de `sw.js` y sube `VERSION` (`v2` → `v3`).
 
 ## Publicar en GitHub Pages
 

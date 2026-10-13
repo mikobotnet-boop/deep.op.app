@@ -10,6 +10,8 @@
 export const KEYS = Object.freeze({
   /** '1' = menú cerrado. Semántica heredada de la primera versión: se conserva por compatibilidad. */
   menuClosed: 'deepop-menu',
+  /** Sesión iniciada (JSON). Si existe, la pantalla de inicio no muestra botones y entra sola. */
+  session: 'deepop-session',
 });
 
 export const storage = {

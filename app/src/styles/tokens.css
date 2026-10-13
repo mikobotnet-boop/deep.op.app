@@ -37,8 +37,22 @@
   --handle: #4a4c52;
   --handle-hover: #fff;
 
+  /* ---------- Pantalla de inicio (intro) ---------- */
+  --intro-ink: #fff;
+  --intro-navy: #04060d;
+  --intro-navy-light: #08102a;
+  --intro-blue: 79, 125, 240;         /* rgb sueltos: se usan con rgba(var(--…), alfa) */
+  --intro-blue-light: 120, 168, 255;
+  --intro-black: 2, 4, 10;
+  --intro-glass: rgba(255, 255, 255, .14);
+  --intro-glass-hover: rgba(255, 255, 255, .22);
+  --intro-field: rgba(255, 255, 255, .10);
+  --intro-error: #ffb4b4;
+  --intro-mesh-size: clamp(360px, 100vmin, 760px);   /* tamaño base de las manchas del fondo */
+
   /* ---------- Tipografía ---------- */
   --font: "Outfit", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-intro: "Lora", Georgia, serif;
 
   /* ---------- Medidas ---------- */
   --rail: 64px;                /* ancho de la barra de iconos */
@@ -73,6 +87,10 @@
   --dur-menu-open: 380ms;      /* drawer + tirador al abrir */
   --dur-menu-close: 260ms;     /* drawer + tirador al cerrar */
   --dur-intro: 560ms;          /* entrada inicial de la página */
+  --dur-intro-cta: 900ms;      /* los botones de la pantalla de inicio aparecen despacio */
+  --dur-intro-exit: 700ms;     /* la pantalla de inicio se disuelve y deja ver la interfaz */
+  --dur-intro-content: 320ms;  /* logo y botones salen antes que el fondo */
+  --dur-fade: 220ms;           /* fundido corto para quien tiene el movimiento reducido */
   --stagger: 26ms;             /* retardo entre elementos consecutivos de una lista */
 
   /* ---------- Movimiento: curvas ---------- */

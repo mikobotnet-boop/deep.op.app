@@ -34,6 +34,10 @@ Definidas como tokens. No se escriben milisegundos sueltos en `motion.css`.
 | `--dur-menu-open` | 380 ms | Drawer y tirador al **abrir** |
 | `--dur-menu-close` | 260 ms | Drawer y tirador al **cerrar** |
 | `--dur-intro` | 560 ms | Entrada inicial de la página |
+| `--dur-intro-cta` | 900 ms | Los botones de la pantalla de inicio aparecen despacio |
+| `--dur-intro-exit` | 700 ms | La pantalla de inicio se disuelve y deja ver la interfaz |
+| `--dur-intro-content` | 320 ms | Logotipo y botones salen antes que el fondo |
+| `--dur-fade` | 220 ms | Fundido corto con movimiento reducido |
 | `--stagger` | 26 ms | Retardo entre elementos consecutivos de una lista |
 
 **Entrar es más lento que salir.** Una apertura que se toma su tiempo se percibe fluida; un cierre largo se percibe como un retraso. Por eso el cierre dura aproximadamente dos tercios de la apertura.
@@ -78,17 +82,30 @@ La transición que cuenta es siempre la **del estado de destino**: por eso abrir
 El estado del menú se restaura de `localStorage`. Para que no se vea el menú abriéndose al cargar la página:
 
 - `<html class="preload">` oculta la app (`visibility: hidden`) y desactiva las transiciones.
-- `main.js` aplica el estado y quita `preload` tras **dos fotogramas**; el primero deja que el navegador calcule el estilo final, el segundo evita que se interprete como un cambio.
-- Si el script no llegara a cargar, una animación de 0 s con retardo muestra la app a los 1,5 s.
+- `main.js` aplica el estado del menú nada más arrancar y quita `preload` cuando se entra desde la pantalla de inicio (sección 7). Para entonces el estado ya está aplicado y calculado, así que nada restaurado se anima.
 - La entrada inicial (dock que sube, iconos que entran en cascada) empieza cuando se quita `preload`, no antes.
+- `preload` solo afecta a la app (`.preload .app`): la pantalla de inicio tiene sus propias transiciones (sección 7).
+- Si el script no llegara a cargar (no se añade `js-ready` a `<html>`), a los 1,5 s se oculta la pantalla de inicio y se muestra la app.
 
-## 7. Accesibilidad
+## 7. Pantalla de inicio y paso a la interfaz
 
-- **Todo el movimiento** está dentro de `@media (prefers-reduced-motion: no-preference)`. Con "reducir movimiento" activado, la app funciona igual pero de forma instantánea. Si se añade un movimiento nuevo, va dentro de ese bloque.
+La intro (`#intro`, fija a pantalla completa) tapa la app hasta que se entra. Para que el paso no sea brusco:
+
+1. Al entrar (Continuar, inicio de sesión o fin de la animación con sesión) pasan **a la vez** dos cosas: `main.js` quita `preload` (la interfaz empieza su entrada habitual) y la intro recibe `.is-leaving`.
+2. Primero salen el logotipo y los botones (`--dur-intro-content`, con un leve `scale` de 1 → 1,04) y, justo detrás, el fondo se desvanece (`--dur-intro-exit`, con 80 ms de retardo). Solo `opacity` y `scale`.
+3. `visibility` cambia al terminar el fundido, así que la intro no recibe clics ni foco mientras se va (además lleva `inert`).
+4. Al terminar (`transitionend`, con un temporizador de seguridad), la intro se elimina del DOM y se detiene el bucle `requestAnimationFrame`.
+
+El fondo y el logotipo los anima `intro.js` fotograma a fotograma: las manchas solo con `transform`; el logotipo cambia atributos de un SVG pequeño (es la única excepción a "solo transform y opacity", ver `decisions.md` D13).
+
+## 8. Accesibilidad
+
+- **Todo el movimiento** (desplazamientos, escalas, rebotes, la animación de la intro) está dentro de `@media (prefers-reduced-motion: no-preference)`. Si se añade un movimiento nuevo, va dentro de ese bloque.
+- **Con "reducir movimiento" activado** solo hay fundidos cortos (`--dur-fade`, `--dur-fast`) en un bloque `@media (prefers-reduced-motion: reduce)` al final de `motion.css`: la pantalla de inicio se disuelve en lugar de desaparecer de golpe y el ítem activo cambia de color con un fundido. Un cambio de opacidad o de color no es movimiento. Lo que **no** debe haber ahí: `translate`, `scale`, `rotate` ni animaciones continuas. Con movimiento reducido el logotipo aparece ya completo y el fondo queda fijo.
 - Los efectos de elevación al pasar el ratón van dentro de `@media (hover: hover)` para que en pantallas táctiles no se queden "pegados" tras tocar.
 - El drawer cerrado está fuera de la tabulación: `inert` (inmediato) y `visibility: hidden` (al terminar la salida).
 
-## 8. Cómo comprobar los 60 FPS
+## 9. Cómo comprobar los 60 FPS
 
 1. Abre Chrome DevTools → **Performance** → pulsa grabar → abre y cierra el menú varias veces → detén.
 2. En la fila **Frames** no debe haber fotogramas rojos ni amarillos durante el movimiento.
@@ -97,11 +114,11 @@ El estado del menú se restaura de `localStorage`. Para que no se vea el menú a
 5. Activa **Rendering → Layer borders** para ver qué capas ha promovido el navegador.
 6. Repite con **CPU throttling 4×** (pestaña Performance): es una buena aproximación de un móvil de gama media.
 
-## 9. Lista de comprobación para animaciones nuevas
+## 10. Lista de comprobación para animaciones nuevas
 
 - [ ] ¿Solo anima `transform` / `opacity`?
 - [ ] ¿Usa tokens de duración y curva?
 - [ ] ¿Entrar es más lento que salir?
-- [ ] ¿Está dentro de `prefers-reduced-motion: no-preference`?
+- [ ] ¿Está dentro de `prefers-reduced-motion: no-preference`? (con movimiento reducido, como mucho un fundido)
 - [ ] ¿Si lleva `will-change`, solo mientras dura?
 - [ ] ¿Se ha comprobado en DevTools sin *paint flashing*?

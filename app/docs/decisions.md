@@ -60,7 +60,7 @@ Registro breve de las decisiones tomadas al separar el HTML original (un solo ar
 
 ## D10. Estado del menú restaurado antes de mostrar la página
 
-**Decisión.** Clase `preload` en `<html>` + doble `requestAnimationFrame` (ver `animation-rules.md`, sección 6).
+**Decisión.** Clase `preload` en `<html>`: `main.js` aplica el estado y solo la quita al entrar desde la pantalla de inicio (ver `animation-rules.md`, secciones 6 y 7). Antes se quitaba tras dos fotogramas (`requestAnimationFrame` doble); ya no hace falta porque la intro da tiempo de sobra.
 
 **Motivo.** Con un script de módulo (diferido) el navegador podría pintar el menú cerrado antes de que el script lo abra, y se vería un salto. Se evita sin necesitar un script bloqueante en el `<head>`.
 
@@ -85,8 +85,38 @@ Registro breve de las decisiones tomadas al separar el HTML original (un solo ar
 - Las fuentes de Google no pasan por el service worker; sin conexión se usa la tipografía del sistema.
 - Comprobado en Chromium con `Page.getInstallabilityErrors` (sin errores), registro y activación del service worker, y recarga sin conexión.
 
+## D13. Pantalla de inicio (intro) por encima de la app, con salida en fundido
+
+**Decisión.** `<section id="intro">` va después de la app en `index.html`, fija a pantalla completa. `intro.js` mueve el fondo (4 manchas con `transform`) y el logotipo (atributos de un SVG) en un único bucle `requestAnimationFrame`. La app está `inert` y con `preload` hasta que se entra; al entrar, `main.js` quita `preload` **a la vez** que la intro empieza a disolverse (`.is-leaving`).
+
+**Motivo.** Si la intro se quitara primero y la app apareciera después, o al revés, habría un instante de corte. Con las dos cosas a la vez, la interfaz hace su entrada normal (dock que sube, iconos en cascada) debajo de una intro que se desvanece, y el cambio es continuo. En el primer fotograma de la salida el logotipo y los botones ya se están apagando (320 ms) y el fondo tarda un poco más (700 ms).
+
+**Excepción a la regla de "solo transform y opacity".** El logotipo cambia de forma (la bolita se estira al retirarse), así que sus atributos SVG se actualizan por fotograma. Es un SVG de ~240 px que vive unos 4 s y se elimina del DOM al salir; el fondo y la salida sí cumplen la regla.
+
+**Detalles.**
+- `intro.js` y `intro.css` no se tocan desde fuera: lo único que sabe `main.js` es `initIntro({ onEnter })`. Si `initIntro` lanza, `main.js` elimina la intro y muestra la app.
+- Si `main.js` ni siquiera llega a ejecutarse (por ejemplo, un módulo que no carga), `layout.css` oculta la intro y muestra la app a los 1,5 s.
+- La intro se elimina del DOM al terminar (`transitionend` + temporizador de seguridad), liberando el bucle y las capas de GPU.
+- Con "reducir movimiento" (`RESPECT_REDUCED_MOTION = true` en `intro.js`) el logotipo aparece completo, el fondo queda fijo y la salida es un fundido corto. Si se quisiera que la animación del logotipo se reproduzca siempre, basta poner esa constante en `false`.
+
+## D14. Sesión local (`session.js`), preparada para un servidor
+
+**Decisión.** `session.js` expone `isSignedIn()`, `user()`, `signIn({ email })` y `signOut()`. Guarda `{ email, since }` en `localStorage` (`deepop-session`), con respaldo en memoria si el almacenamiento está bloqueado.
+
+**Motivo.** El diseño pide que quien ya inició sesión no vea botones. Sin servidor no se puede verificar a nadie, así que la sesión es solo una marca local: **no es seguridad**. Mantener `signIn` como única función que cambiaría con un servidor evita tocar el resto de la app.
+
+**Continuar no crea sesión.** Quien pulsa Continuar vuelve a ver la pantalla con botones la próxima vez.
+
+## D15. Ítem activo en `nav.js`; el CSS ya estaba preparado
+
+**Decisión.** Un único listener delegado en `.app`. Menú: al elegir un ítem se marca en la barra de iconos **y** en el drawer (se emparejan por `data-tip` / `data-x`). Barra inferior: independiente del menú; el botón central `+` es una acción y no se marca. Se mantiene `aria-current="page"` junto a la clase `.on`.
+
+**Motivo.** El indicador del dock y el fondo de `.item.on` ya se animaban en cuanto cambiara la clase, así que no hubo que tocar el CSS de los componentes. Con movimiento reducido el cambio es un fundido de color (bloque `reduce` de `motion.css`).
+
+**Todavía no navega.** Cambia qué ítem se ve como activo, pero no hay pantallas detrás; eso queda para cuando la navegación sea real.
+
 ## Pendiente / deuda conocida
 
 - **Menú duplicado en el HTML.** La barra de iconos y el drawer repiten la misma lista de ítems (como en el original). Cuando la navegación sea real, conviene generarla desde un único arreglo de datos.
-- **Selección de ítems.** El original no cambia el ítem activo al hacer clic, y esta versión mantiene ese comportamiento. El CSS ya está preparado: el indicador del dock y el fondo de `.item.on` se animan en cuanto una clase cambie.
+- **Sesión sin servidor.** `session.js` es local y no hay forma de cerrar sesión desde la interfaz (existe `signOut()`, falta el botón).
 - **Submenú "Actividad".** Tiene `aria-expanded="true"` y un chevron, pero no se pliega. Sin cambios respecto al original.

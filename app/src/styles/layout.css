@@ -7,14 +7,16 @@
   height: 100%;
 }
 
-/* Arranque: <html class="preload"> mantiene la app oculta hasta que main.js haya
-   aplicado el estado guardado del menú. Así nunca se ve el salto cerrado → abierto.
-   Red de seguridad: si el script no llega a ejecutarse, la app se muestra a los 1,5 s. */
-.preload .app {
-  visibility: hidden;
-  animation: preload-failsafe 0s 1.5s forwards;
-}
+/* Arranque: <html class="preload"> mantiene la app oculta mientras se ve la pantalla de
+   inicio (intro). main.js quita `preload` cuando la intro empieza a disolverse.
+   Red de seguridad: `js-ready` lo pone main.js nada más ejecutarse; si no aparece (el script
+   no llegó a cargar), a los 1,5 s se oculta la intro y se muestra la app. */
+.preload .app { visibility: hidden; }
+
+html:not(.js-ready).preload .app { animation: preload-failsafe 0s 1.5s forwards; }
+html:not(.js-ready) .intro { animation: intro-failsafe 0s 1.5s forwards; }
 @keyframes preload-failsafe { to { visibility: visible; } }
+@keyframes intro-failsafe { to { visibility: hidden; pointer-events: none; } }
 
 /* Panel interior de esquinas redondeadas.
    Contiene el drawer, el tirador y el dock (todos posicionados dentro de él). */
