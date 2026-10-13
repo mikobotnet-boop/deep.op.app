@@ -1,0 +1,78 @@
+/* ==========================================================================
+   nav-items.css — piezas compartidas por la barra de iconos (rail) y el menú
+   completo (drawer): marca, grupos, etiquetas, ítems, submenú, punto, insignia.
+   ========================================================================== */
+
+.brand {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: var(--brand-h);
+  padding: 0 28px;
+  border-bottom: 1px solid var(--line);
+}
+.brand .name { font-size: 18px; letter-spacing: .01em; white-space: nowrap; }
+.brand .logo { width: 34px; height: 27px; color: var(--logo); }
+
+.group { padding: 18px 12px 10px; }
+.group + .group { border-top: 1px solid var(--line); }
+.group.end { margin-top: auto; }
+
+.label {
+  padding: 0 16px 12px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  height: var(--item-h);
+  padding: 0 16px;
+  border-radius: var(--radius-item);
+  color: var(--muted);
+  font-size: 18px;
+  text-align: left;
+  white-space: nowrap;
+}
+.item:hover { color: var(--text); }
+.item.on { background: var(--active); color: var(--text); }
+.item .grow { flex: 1; }
+
+.chev {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sub { padding: 4px 0 4px 16px; }
+.sub .item { color: var(--text); }
+.sub .item:hover { background: rgba(255, 255, 255, .05); }
+
+.dot { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+.dot.v { background: var(--violet); }
+.dot.p { background: var(--pink); }
+.dot.r { background: var(--red); }
+
+.badge {
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: 15px;
+  background: var(--inverse-bg);
+  color: var(--inverse-text);
+  font-size: 16px;
+}

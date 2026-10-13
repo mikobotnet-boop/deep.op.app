@@ -1,0 +1,95 @@
+/* ==========================================================================
+   rail.css — barra negra de iconos, pegada a la izquierda (estado contraído).
+   Depende de nav-items.css para los ítems.
+   ========================================================================== */
+
+.side {
+  position: relative;
+  z-index: 6;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  width: var(--rail);
+  height: 100%;
+  background: var(--frame);
+}
+
+/* ---------- Solo iconos ---------- */
+.collapsed .brand { justify-content: center; padding: 0; }
+.collapsed .brand .name,
+.collapsed .label { display: none; }
+
+.collapsed .group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 0;
+}
+
+.collapsed .item {
+  width: var(--item-h-compact);
+  height: var(--item-h-compact);
+  padding: 0;
+  justify-content: center;
+}
+.collapsed .item .txt,
+.collapsed .item .chev,
+.collapsed .item .grow { display: none; }
+
+.collapsed .sub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+}
+.collapsed .sub .item { border: 1px solid transparent; }
+.collapsed .sub .item:hover { border-color: var(--border-hover); background: var(--surface-hover); }
+
+/* ---------- Insignia: sobresale de la barra hacia el panel ---------- */
+.collapsed .badge {
+  position: absolute;
+  z-index: 7;
+  top: 7px;
+  right: -25px;
+}
+
+/* ---------- Tooltip ---------- */
+.collapsed .item[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  z-index: 8;
+  top: 50%;
+  left: calc(100% + 16px);
+  translate: 0 -50%;
+  padding: 10px 18px;
+  border-radius: var(--radius-item);
+  background: var(--inverse-bg);
+  color: var(--inverse-text);
+  font-size: 16px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
+}
+.collapsed .item[data-tip]:hover::after,
+.collapsed .item[data-tip]:focus-visible::after { opacity: 1; }
+
+/* ---------- Con el drawer abierto, el tooltip y la insignia sobran ---------- */
+.app.open .collapsed .item[data-tip]::after { display: none; }
+.app.open .collapsed .badge { opacity: 0; visibility: hidden; scale: .6; }
+
+/* ---------- Móvil ---------- */
+@media (max-width: 760px) {
+  .side { overflow-y: auto; overscroll-behavior: contain; }
+  .collapsed .item[data-tip]::after { display: none; }
+  .collapsed .badge {
+    top: -4px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    font-size: 12px;
+  }
+}

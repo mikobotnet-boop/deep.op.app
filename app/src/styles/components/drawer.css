@@ -1,0 +1,31 @@
+/* ==========================================================================
+   drawer.css — menú completo. Vive dentro del panel, junto a la barra de iconos.
+
+   Estado base = cerrado. Se saca de pantalla con transform (no con display:none)
+   para poder animarlo; `visibility: hidden` lo retira del árbol de accesibilidad
+   y de la tabulación, y el atributo `inert` (lo gestiona menu.js) lo bloquea ya.
+   ========================================================================== */
+
+.drawer {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: var(--drawer-bottom);
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: var(--drawer-w);
+  background: var(--surface-drawer);
+  border-right: 1px solid var(--line);
+  border-radius: 0 var(--radius-drawer) var(--radius-drawer) 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  transform: translateX(-100%);
+  visibility: hidden;
+}
+
+.app.open .drawer {
+  transform: none;
+  visibility: visible;
+}
