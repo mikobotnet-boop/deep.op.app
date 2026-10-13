@@ -1,0 +1,58 @@
+/* ==========================================================================
+   base.css — reinicio, tipografía y foco.
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  box-sizing: border-box;
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+}
+
+html {
+  height: 100%;
+  scroll-padding-top: var(--safe-top);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--frame);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;   /* elimina el retardo de doble toque en móvil */
+}
+
+svg { display: block; flex: none; }
+
+/* Icono estándar: el color lo hereda del texto (currentColor) */
+.ico {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- Foco ---------- */
+:focus-visible {
+  outline: 2px solid var(--violet-soft);
+  outline-offset: 2px;
+}

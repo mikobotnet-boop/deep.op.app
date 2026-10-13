@@ -1,0 +1,171 @@
+/* ==========================================================================
+   motion.css — Fase 2: todas las animaciones de la app.
+
+   Reglas (detalle y motivos en docs/animation-rules.md):
+   1. Solo se animan `transform` (translate / scale / rotate) y `opacity`: corren en
+      el compositor (GPU), no provocan layout ni repintado y mantienen 60 FPS.
+      Excepción admitida: color / background-color en elementos diminutos.
+   2. Tiempos y curvas salen de tokens.css. Aquí no hay números mágicos.
+   3. Lo que entra es más lento que lo que sale.
+   4. `will-change` solo mientras se anima (la clase .is-animating la pone menu.js).
+   5. Todo el movimiento está dentro de `prefers-reduced-motion: no-preference`.
+      Sin esa preferencia la app es idéntica pero instantánea.
+
+   Este archivo es prescindible: si se quita su <link>, la interfaz funciona igual.
+   ========================================================================== */
+
+/* Durante el arranque no se anima el estado restaurado (ver main.js). */
+.preload *,
+.preload *::before,
+.preload *::after {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+
+  /* ------------------------------------------------------------------------
+     Keyframes
+     ------------------------------------------------------------------------ */
+  @keyframes rise {
+    from { opacity: 0; translate: 0 14px; }
+  }
+  @keyframes slide-in {
+    from { opacity: 0; translate: -8px 0; }
+  }
+
+  /* ------------------------------------------------------------------------
+     Ítems de menú (rail y drawer): color, fondo y pulsación
+     ------------------------------------------------------------------------ */
+  .item {
+    --t-base:
+      color var(--dur-fast) var(--ease-standard),
+      background-color var(--dur-fast) var(--ease-standard),
+      border-color var(--dur-fast) var(--ease-standard),
+      scale var(--dur-instant) var(--ease-out);
+    transition: var(--t-base);
+  }
+  .item:active { scale: .97; }
+
+  /* ------------------------------------------------------------------------
+     Drawer + tirador: se mueven juntos, con los mismos tiempos y curva.
+     La transición que cuenta es la del estado de destino: abrir usa la regla
+     `.app.open`, cerrar usa la regla base (más corta).
+     ------------------------------------------------------------------------ */
+  .drawer {
+    transition:
+      transform var(--dur-menu-close) var(--ease-in-out),
+      visibility 0s linear var(--dur-menu-close);   /* se oculta cuando termina de salir */
+  }
+  .app.open .drawer {
+    transition:
+      transform var(--dur-menu-open) var(--ease-out),
+      visibility 0s;                                /* visible desde el primer fotograma */
+  }
+
+  .handle { transition: transform var(--dur-menu-close) var(--ease-in-out); }
+  .app.open .handle { transition: transform var(--dur-menu-open) var(--ease-out); }
+
+  .handle::before {
+    transition:
+      background-color var(--dur-fast) var(--ease-standard),
+      transform var(--dur-base) var(--ease-spring);
+  }
+
+  /* will-change solo durante el movimiento: libera la capa de GPU al terminar */
+  .app.is-animating .drawer,
+  .app.is-animating .handle { will-change: transform; }
+
+  /* ------------------------------------------------------------------------
+     Contenido del drawer: entra en cascada tras el panel, sale de golpe.
+     --i lo numera menu.js; el retardo sale de --i × --stagger.
+     ------------------------------------------------------------------------ */
+  .drawer :is(.name, .label, .item) {
+    opacity: 0;
+    translate: -12px 0;
+    transition:
+      var(--t-base, color var(--dur-fast) var(--ease-standard)),
+      opacity var(--dur-fast) var(--ease-standard),
+      translate var(--dur-fast) var(--ease-standard);
+  }
+  .app.open .drawer :is(.name, .label, .item) {
+    /* La cascada se limita a 8 pasos: con listas largas el último elemento no tarda más. */
+    --delay: calc(min(var(--i, 0), 8) * var(--stagger) + 70ms);
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      var(--t-base, color var(--dur-fast) var(--ease-standard)),
+      opacity var(--dur-base) var(--ease-standard) var(--delay),
+      translate var(--dur-base) var(--ease-out) var(--delay);
+  }
+
+  /* ------------------------------------------------------------------------
+     Rail: insignia y tooltip
+     ------------------------------------------------------------------------ */
+  /* La insignia reaparece cuando el drawer ya casi ha salido, no encima de él */
+  .collapsed .badge {
+    transition:
+      opacity var(--dur-base) var(--ease-standard) var(--dur-menu-close),
+      scale var(--dur-base) var(--ease-spring) var(--dur-menu-close),
+      visibility 0s linear var(--dur-menu-close);
+  }
+  .app.open .collapsed .badge {
+    transition:
+      opacity var(--dur-instant) var(--ease-standard),
+      scale var(--dur-instant) var(--ease-standard),
+      visibility 0s linear var(--dur-instant);
+  }
+
+  .collapsed .item[data-tip]::after {
+    translate: -6px -50%;
+    transition:
+      opacity var(--dur-fast) var(--ease-standard),
+      translate var(--dur-fast) var(--ease-out);
+  }
+  .collapsed .item[data-tip]:hover::after,
+  .collapsed .item[data-tip]:focus-visible::after {
+    translate: 0 -50%;
+    transition-delay: 70ms;   /* evita parpadeos al cruzar la barra con el ratón */
+  }
+
+  /* ------------------------------------------------------------------------
+     Dock
+     ------------------------------------------------------------------------ */
+  .dock .tab {
+    transition:
+      color var(--dur-fast) var(--ease-standard),
+      translate var(--dur-base) var(--ease-out),
+      scale var(--dur-instant) var(--ease-out);
+  }
+  .dock .tab:active { scale: .88; }
+
+  .dock .tab::after {
+    transition:
+      opacity var(--dur-base) var(--ease-standard),
+      scale var(--dur-base) var(--ease-spring);
+  }
+
+  .dock .add {
+    transition:
+      translate var(--dur-base) var(--ease-out),
+      scale var(--dur-base) var(--ease-spring);
+  }
+  .dock .add:active { scale: .92; }
+  .dock .add .ico { transition: rotate var(--dur-base) var(--ease-out); }
+
+  /* Elevación al pasar el ratón: solo en dispositivos con hover real (no en táctiles) */
+  @media (hover: hover) {
+    .dock .tab:hover { translate: 0 -2px; }
+    .dock .add:hover { translate: 0 -2px; scale: 1.06; }
+    .dock .add:hover .ico { rotate: 90deg; }
+  }
+
+  /* ------------------------------------------------------------------------
+     Entrada inicial (empieza cuando se retira .preload)
+     ------------------------------------------------------------------------ */
+  html:not(.preload) .dock {
+    animation: rise var(--dur-intro) var(--ease-out) 160ms backwards;
+  }
+  html:not(.preload) .side :is(.brand, .item) {
+    animation: slide-in var(--dur-intro) var(--ease-out) calc(var(--i, 0) * var(--stagger) + 40ms) backwards;
+  }
+}

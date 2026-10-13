@@ -1,0 +1,31 @@
+/* ==========================================================================
+   layout.css — marco, panel redondeado y rejilla general.
+   ========================================================================== */
+
+.app {
+  display: flex;
+  height: 100%;
+}
+
+/* Arranque: <html class="preload"> mantiene la app oculta hasta que main.js haya
+   aplicado el estado guardado del menú. Así nunca se ve el salto cerrado → abierto.
+   Red de seguridad: si el script no llega a ejecutarse, la app se muestra a los 1,5 s. */
+.preload .app {
+  visibility: hidden;
+  animation: preload-failsafe 0s 1.5s forwards;
+}
+@keyframes preload-failsafe { to { visibility: visible; } }
+
+/* Panel interior de esquinas redondeadas.
+   Contiene el drawer, el tirador y el dock (todos posicionados dentro de él). */
+.stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  margin: var(--gap) var(--gap) var(--gap) 0;
+  height: calc(100% - var(--gap) * 2);
+  background: var(--panel);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+  isolation: isolate;   /* contexto de apilamiento propio: capas internas no se mezclan con el exterior */
+}

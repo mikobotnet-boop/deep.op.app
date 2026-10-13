@@ -1,0 +1,83 @@
+/* ==========================================================================
+   tokens.css — única fuente de verdad de valores de diseño.
+   Colores, medidas, tiempos y curvas de animación. Nada de reglas aquí.
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  /* ---------- Color: superficies ---------- */
+  --frame: #000;               /* marco exterior y barra de iconos */
+  --panel: #111214;            /* panel interior redondeado */
+  --surface-drawer: #17181b;
+  --surface-dock: #1f2023;
+  --surface-hover: #0c0c0e;
+  --line: #1c1d20;
+  --active: #1d1e21;
+  --border-hover: #2a2b2f;
+
+  /* ---------- Color: texto e iconos ---------- */
+  --text: #f4f4f5;
+  --muted: #9a9ca2;
+  --faint: #6c6e74;
+  --dock-icon: #b9bbc1;
+  --on-accent: #e9e6ff;
+  --logo: #fff;
+  --inverse-bg: #fff;          /* superficie clara sobre fondo oscuro: tooltips e insignias */
+  --inverse-text: #111;
+
+  /* ---------- Color: acentos ---------- */
+  --violet: #7c5cff;
+  --violet-soft: #a78bfa;
+  --pink: #e84fb4;
+  --red: #f0454f;
+  --glow: rgba(124, 92, 255, .45);
+
+  /* ---------- Color: tirador (handle) ---------- */
+  --handle: #4a4c52;
+  --handle-hover: #fff;
+
+  /* ---------- Tipografía ---------- */
+  --font: "Outfit", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  /* ---------- Medidas ---------- */
+  --rail: 64px;                /* ancho de la barra de iconos */
+  --gap: 6px;                  /* margen entre el panel y el borde de la ventana */
+  --handle-w: 22px;
+  --drawer-max: 260px;
+  /* Ancho del drawer. Se expresa con vw (y no con %) porque el tirador lo usa en un
+     translateX, donde el % se calcularía sobre el propio tirador. Debe ser siempre
+     el ancho del panel (100vw - rail - gap) menos el ancho del tirador. */
+  --drawer-w: min(var(--drawer-max), calc(100vw - var(--rail) - var(--gap) - var(--handle-w)));
+  --drawer-bottom: 96px;       /* espacio libre bajo el drawer para que no tape el dock */
+
+  --brand-h: 84px;
+  --item-h: 48px;
+  --item-h-compact: 44px;
+  --dock-h: 54px;
+  --dock-w: 516px;
+  --dock-bottom: 22px;
+
+  --radius-panel: 26px;
+  --radius-drawer: 24px;
+  --radius-item: 14px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* ---------- Movimiento: duraciones ----------
+     Regla: lo que entra es más lento que lo que sale. */
+  --dur-instant: 100ms;        /* retroalimentación táctil (pulsar) */
+  --dur-fast: 150ms;           /* hover, color, foco */
+  --dur-base: 240ms;           /* elementos pequeños que aparecen */
+  --dur-menu-open: 380ms;      /* drawer + tirador al abrir */
+  --dur-menu-close: 260ms;     /* drawer + tirador al cerrar */
+  --dur-intro: 560ms;          /* entrada inicial de la página */
+  --stagger: 26ms;             /* retardo entre elementos consecutivos de una lista */
+
+  /* ---------- Movimiento: curvas ---------- */
+  --ease-out: cubic-bezier(.22, 1, .36, 1);        /* arranque rápido, frenada suave: entradas */
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);     /* salidas y movimientos simétricos */
+  --ease-standard: cubic-bezier(.4, 0, .2, 1);     /* cambios de color/opacidad */
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);  /* rebote leve: pulsaciones y pops */
+}
