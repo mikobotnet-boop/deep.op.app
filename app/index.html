@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es" class="preload">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>Deep op</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap">
+
+  <!-- El orden importa: de lo más global a lo más específico -->
+  <link rel="stylesheet" href="src/styles/tokens.css">
+  <link rel="stylesheet" href="src/styles/base.css">
+  <link rel="stylesheet" href="src/styles/layout.css">
+  <link rel="stylesheet" href="src/styles/components/nav-items.css">
+  <link rel="stylesheet" href="src/styles/components/rail.css">
+  <link rel="stylesheet" href="src/styles/components/drawer.css">
+  <link rel="stylesheet" href="src/styles/components/handle.css">
+  <link rel="stylesheet" href="src/styles/components/dock.css">
+  <!-- Fase 2: se puede quitar esta línea y la app sigue funcionando, solo que sin movimiento -->
+  <link rel="stylesheet" href="src/styles/motion.css">
+
+  <script type="module" src="src/scripts/main.js"></script>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- Barra de iconos (siempre visible) -->
+  <nav class="side collapsed" id="side" aria-label="Barra de iconos">
+    <div class="brand">
+      <svg class="logo" aria-hidden="true"><use href="src/icons/icons.svg#i-logo"/></svg>
+      <span class="name">Deep op</span>
+    </div>
+
+    <div class="group">
+      <div class="label">Menú</div>
+      <button class="item" data-tip="Inicio"><svg class="ico"><use href="src/icons/icons.svg#i-home"/></svg><span class="txt grow">Inicio</span></button>
+      <button class="item on" data-tip="Actividad" aria-expanded="true"><svg class="ico"><use href="src/icons/icons.svg#i-chart"/></svg><span class="txt grow">Actividad</span><svg class="chev"><use href="src/icons/icons.svg#i-chevron-up"/></svg></button>
+      <div class="sub">
+        <button class="item" data-tip="Resumen"><span class="dot v"></span><span class="txt">Resumen</span></button>
+        <button class="item" data-tip="Analítica"><span class="dot p"></span><span class="txt">Analítica</span></button>
+        <button class="item" data-tip="Proyectos"><span class="dot r"></span><span class="txt">Proyectos</span></button>
+      </div>
+      <button class="item" data-tip="Tareas"><svg class="ico"><use href="src/icons/icons.svg#i-tasks"/></svg><span class="txt">Tareas</span></button>
+      <button class="item" data-tip="Informes"><svg class="ico"><use href="src/icons/icons.svg#i-alert"/></svg><span class="txt">Informes</span></button>
+      <button class="item" data-tip="Usuarios"><svg class="ico"><use href="src/icons/icons.svg#i-users"/></svg><span class="txt grow">Usuarios</span><span class="badge">3</span></button>
+    </div>
+
+    <div class="group end">
+      <div class="label">Otros</div>
+      <button class="item" data-tip="Ayuda"><svg class="ico"><use href="src/icons/icons.svg#i-help"/></svg><span class="txt">Ayuda</span></button>
+      <button class="item" data-tip="Ajustes"><svg class="ico"><use href="src/icons/icons.svg#i-gear"/></svg><span class="txt">Ajustes</span></button>
+    </div>
+  </nav>
+
+  <!-- Panel interior de esquinas redondeadas -->
+  <main class="stage" aria-label="Deep op">
+
+    <!-- Menú completo (cerrado por defecto: `inert` lo saca del orden de tabulación) -->
+    <div class="drawer" id="drawer" aria-label="Menú principal" inert>
+      <div class="brand"><span class="name">Deep op</span></div>
+
+      <div class="group">
+        <div class="label">Menú</div>
+        <button class="item" data-x="Inicio"><svg class="ico"><use href="src/icons/icons.svg#i-home"/></svg><span class="txt grow">Inicio</span></button>
+        <button class="item on" data-x="Actividad" aria-expanded="true"><svg class="ico"><use href="src/icons/icons.svg#i-chart"/></svg><span class="txt grow">Actividad</span><svg class="chev"><use href="src/icons/icons.svg#i-chevron-up"/></svg></button>
+        <div class="sub">
+          <button class="item" data-x="Resumen"><span class="dot v"></span><span class="txt">Resumen</span></button>
+          <button class="item" data-x="Analítica"><span class="dot p"></span><span class="txt">Analítica</span></button>
+          <button class="item" data-x="Proyectos"><span class="dot r"></span><span class="txt">Proyectos</span></button>
+        </div>
+        <button class="item" data-x="Tareas"><svg class="ico"><use href="src/icons/icons.svg#i-tasks"/></svg><span class="txt">Tareas</span></button>
+        <button class="item" data-x="Informes"><svg class="ico"><use href="src/icons/icons.svg#i-alert"/></svg><span class="txt">Informes</span></button>
+        <button class="item" data-x="Usuarios"><svg class="ico"><use href="src/icons/icons.svg#i-users"/></svg><span class="txt grow">Usuarios</span><span class="badge">3</span></button>
+      </div>
+
+      <div class="group end">
+        <div class="label">Otros</div>
+        <button class="item" data-x="Ayuda"><svg class="ico"><use href="src/icons/icons.svg#i-help"/></svg><span class="txt">Ayuda</span></button>
+        <button class="item" data-x="Ajustes"><svg class="ico"><use href="src/icons/icons.svg#i-gear"/></svg><span class="txt">Ajustes</span></button>
+      </div>
+    </div>
+
+    <!-- Línea | que abre y cierra el menú -->
+    <button class="handle" id="handle" aria-label="Abrir menú" aria-expanded="false" aria-controls="drawer"></button>
+
+    <!-- Barra inferior -->
+    <nav class="dock" aria-label="Navegación inferior">
+      <button class="tab on" aria-label="Inicio" aria-current="page"><svg class="ico"><use href="src/icons/icons.svg#i-home-solid"/></svg></button>
+      <button class="tab" aria-label="Chat"><svg class="ico"><use href="src/icons/icons.svg#i-chat"/></svg></button>
+      <button class="add" aria-label="Crear"><svg class="ico"><use href="src/icons/icons.svg#i-plus"/></svg></button>
+      <button class="tab" aria-label="Notificaciones"><svg class="ico"><use href="src/icons/icons.svg#i-bell"/></svg></button>
+      <button class="tab" aria-label="Perfil"><svg class="ico"><use href="src/icons/icons.svg#i-user"/></svg></button>
+    </nav>
+  </main>
+</div>
+
+</body>
+</html>
