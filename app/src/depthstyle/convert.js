@@ -19,7 +19,8 @@ import { even, multipleOf14, abortError, seek, openVideo, pickCodec } from './vi
  * @param {number}   o.start
  * @param {number}   o.end
  * @param {AbortSignal} [o.signal]
- * @param {(e: {phase: 'model'|'frames'|'finish', fraction: number, etaSeconds?: number,
+ * @param {(e: {phase: 'model'|'prepare'|'frames'|'finish', fraction: number|null, frame?: number,
+ *             total?: number, secondsPerFrame?: number, etaSeconds?: number,
  *             profile?: string}) => void} [o.onProgress]
  * @param {{estimate: Function, profile: object}} [o.depth]  estimador ya cargado (para pruebas)
  */
@@ -28,7 +29,7 @@ export async function convertToDepthStyle({ url, start, end, signal, onProgress 
   if (!check.ok) throw new Error(check.reason);
   if (signal?.aborted) throw abortError();
 
-  const model = depth ?? await loadDepthModel((f) => onProgress({ phase: 'model', fraction: f }));
+  const model = depth ?? await loadDepthModel(onProgress, signal);
   const { profile } = model;
   if (signal?.aborted) throw abortError();
 
@@ -85,6 +86,8 @@ export async function convertToDepthStyle({ url, start, end, signal, onProgress 
     const prev = new Float32Array(dW * dH).fill(-1);
     const keyEvery = Math.max(1, Math.round(KEYFRAME_EVERY_S * fps));
     const t0 = performance.now();
+    // El primer fotograma tarda más (el dispositivo compila el modelo): se avisa antes de empezar
+    onProgress({ phase: 'frames', fraction: 0, frame: 0, total, profile: profile.name });
 
     for (let i = 0; i < total; i++) {
       if (signal?.aborted) throw abortError();
@@ -95,7 +98,7 @@ export async function convertToDepthStyle({ url, start, end, signal, onProgress 
       inCtx.drawImage(video, 0, 0, dW, dH);
       const rgba = inCtx.getImageData(0, 0, dW, dH).data;
 
-      const raw = await model.estimate(rgba, dW, dH);
+      const raw = await model.estimate(rgba, dW, dH, signal);
       paintDepth(normalizeDepth(raw, range), prev, gray.data);
       dCtx.putImageData(gray, 0, 0);
       outCtx.drawImage(dCanvas, 0, 0, outW, outH);
@@ -115,6 +118,9 @@ export async function convertToDepthStyle({ url, start, end, signal, onProgress 
       onProgress({
         phase: 'frames',
         fraction: done / total,
+        frame: done,
+        total,
+        secondsPerFrame: elapsed / done,
         etaSeconds: done >= 3 ? (elapsed / done) * (total - done) : undefined,
         profile: profile.name,
       });

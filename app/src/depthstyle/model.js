@@ -1,116 +1,136 @@
 /**
- * model.js — compatibilidad del navegador y carga del modelo de profundidad (una vez por sesión).
+ * model.js — compatibilidad del navegador y cliente del modelo de profundidad.
+ *
+ * El modelo se ejecuta en un worker (worker.js) que se crea una sola vez por sesión y se reutiliza
+ * entre conversiones. Aquí se gestionan los tiempos máximos y los mensajes de error en español.
  */
 
-import { MODEL_ID, TRANSFORMERS_URL, PROFILES, MEAN, STD } from './config.js';
+import { STALL_TIMEOUT_MS, ESTIMATE_TIMEOUT_MS } from './config.js';
 
 /* =========================================================
-   Compatibilidad
+   Errores y compatibilidad
    ========================================================= */
+
+export class DepthStyleError extends Error {
+  constructor(code, message) {
+    super(message);
+    this.name = 'DepthStyleError';
+    this.code = code;
+  }
+}
+
+const MESSAGES = {
+  network: 'Sin conexión con el servidor de librerías. La primera conversión necesita internet para descargar el modelo (≈50 MB). Conéctate y vuelve a intentarlo.',
+  timeout: 'El dispositivo tardó demasiado en responder. Cierra otras apps, prueba con un fragmento más corto y vuelve a intentarlo.',
+  worker: 'No se pudo iniciar el motor de conversión en este navegador. Prueba con Chrome actualizado.',
+};
+
+function modelError(code, detail) {
+  return new DepthStyleError(code, MESSAGES[code] ?? `No se pudo cargar el modelo de profundidad${detail ? ` (${detail})` : ''}.`);
+}
+
+const abortError = () => new DOMException('Conversión cancelada.', 'AbortError');
 
 /** { ok: true } o { ok: false, reason } según lo que ofrezca el navegador. */
 export function checkSupport() {
   if (typeof VideoEncoder === 'undefined' || typeof VideoFrame === 'undefined') {
     return { ok: false, reason: 'Este navegador no puede codificar video. Prueba con Chrome actualizado.' };
   }
-  if (typeof WebAssembly === 'undefined') {
-    return { ok: false, reason: 'Este navegador no admite WebAssembly, necesario para el modelo de profundidad.' };
+  if (typeof WebAssembly === 'undefined' || typeof Worker === 'undefined') {
+    return { ok: false, reason: 'Este navegador no admite WebAssembly ni workers, necesarios para el modelo de profundidad.' };
   }
   return { ok: true };
 }
 
-async function pickProfile() {
-  try {
-    const adapter = await navigator.gpu?.requestAdapter();
-    if (adapter?.features.has('shader-f16')) return { name: 'gpu', ...PROFILES.gpu };
-  } catch { /* sin WebGPU: se usa la CPU */ }
-  return { name: 'cpu', ...PROFILES.cpu };
-}
-
 /* =========================================================
-   Modelo (se carga una sola vez por sesión)
+   Cliente del worker (se crea una sola vez por sesión)
    ========================================================= */
 
-let modelPromise = null;
+let client = null;
 
-/**
- * Carga la librería y el modelo. Devuelve { estimate(rgba, w, h) → Float32Array, profile }.
- * `estimate` recibe los píxeles RGBA de un lienzo de w×h (múltiplos de 14) y devuelve la
- * profundidad relativa (mayor = más cerca).
- */
-export function loadDepthModel(onProgress = () => {}) {
-  if (!modelPromise) {
-    modelPromise = createDepthModel(onProgress).catch((err) => {
-      modelPromise = null;       // permite reintentar tras un fallo (por ejemplo, sin conexión)
-      throw err;
-    });
-  }
-  return modelPromise;
+function stopClient(c) {
+  c.worker.terminate();
+  if (client === c) client = null;
 }
 
-async function createDepthModel(onProgress) {
-  const tf = await import(TRANSFORMERS_URL);
-  const { AutoModelForDepthEstimation, Tensor, env } = tf;
-  env.allowLocalModels = false;
+function startClient() {
+  const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
+  const c = { worker, onProgress: () => {}, pending: new Map(), nextId: 1, profile: null, watchdog: 0 };
 
-  // Progreso de descarga: suma de los archivos del modelo que se están bajando
-  const files = new Map();
-  const progress_callback = (p) => {
-    if (p.status !== 'progress' || !p.total) return;
-    files.set(p.file, { loaded: p.loaded, total: p.total });
-    let loaded = 0;
-    let total = 0;
-    for (const f of files.values()) { loaded += f.loaded; total += f.total; }
-    onProgress(total ? loaded / total : 0);
+  const fail = (err) => {
+    clearTimeout(c.watchdog);
+    c.rejectReady?.(err);
+    for (const p of c.pending.values()) p.reject(err);
+    c.pending.clear();
+    stopClient(c);
+  };
+  // Si el modelo no da señales de vida durante STALL_TIMEOUT_MS (descarga o preparación), se corta.
+  const arm = () => {
+    clearTimeout(c.watchdog);
+    c.watchdog = setTimeout(() => fail(modelError('timeout')), STALL_TIMEOUT_MS);
   };
 
-  const first = await pickProfile();
-  const attempts = first.name === 'gpu' ? [first, { name: 'cpu', ...PROFILES.cpu }] : [first];
-  let model = null;
-  let profile = null;
-  let lastError = null;
-  for (const p of attempts) {
-    try {
-      model = await AutoModelForDepthEstimation.from_pretrained(MODEL_ID, {
-        device: p.device, dtype: p.dtype, progress_callback,
-      });
-      profile = p;
-      break;
-    } catch (err) {
-      lastError = err;
-      files.clear();
-    }
-  }
-  if (!model) throw lastError ?? new Error('No se pudo cargar el modelo.');
+  c.ready = new Promise((resolve, reject) => { c.resolveReady = resolve; c.rejectReady = reject; });
+  c.ready.catch(() => {});          // evita «unhandled rejection» si nadie la espera ya
 
-  async function estimate(rgba, w, h) {
-    // Lienzo RGBA → tensor [1, 3, h, w] normalizado
-    const plane = w * h;
-    const data = new Float32Array(3 * plane);
-    for (let i = 0, p = 0; i < plane; i++, p += 4) {
-      data[i] = (rgba[p] / 255 - MEAN[0]) / STD[0];
-      data[plane + i] = (rgba[p + 1] / 255 - MEAN[1]) / STD[1];
-      data[2 * plane + i] = (rgba[p + 2] / 255 - MEAN[2]) / STD[2];
+  worker.onmessage = (e) => {
+    const m = e.data;
+    if (m.type === 'progress') { arm(); c.onProgress({ phase: 'model', fraction: m.fraction }); }
+    else if (m.type === 'phase') { arm(); c.onProgress({ phase: 'prepare', fraction: null }); }
+    else if (m.type === 'ready') { clearTimeout(c.watchdog); c.profile = m.profile; c.resolveReady(m.profile); }
+    else if (m.type === 'result') { c.pending.get(m.id)?.resolve(new Float32Array(m.depth)); c.pending.delete(m.id); }
+    else if (m.type === 'error') {
+      if (m.id !== undefined) {
+        c.pending.get(m.id)?.reject(new DepthStyleError('estimate', `No se pudo calcular la profundidad: ${m.message}`));
+        c.pending.delete(m.id);
+      } else fail(modelError(m.code, m.message));
     }
-    const out = await model({ pixel_values: new Tensor('float32', data, [1, 3, h, w]) });
-    const t = out.predicted_depth;
-    const depth = t.type === 'float16' ? halfToFloat(t.data) : Float32Array.from(t.data);
-    t.dispose?.();
-    return depth;
-  }
+  };
+  worker.onerror = (e) => fail(modelError('worker', e.message));
+  worker.onmessageerror = () => fail(modelError('worker'));
 
-  return { estimate, profile };
+  c.onProgress({ phase: 'model', fraction: null });
+  arm();
+  worker.postMessage({ type: 'load' });
+  return c;
 }
 
-/** float16 (guardado en Uint16Array) → Float32Array. */
-function halfToFloat(src) {
-  const out = new Float32Array(src.length);
-  for (let i = 0; i < src.length; i++) {
-    const h = src[i];
-    const e = (h >> 10) & 0x1f;
-    const m = h & 0x3ff;
-    const v = e === 0 ? m * 2 ** -24 : e === 31 ? (m ? NaN : Infinity) : (1 + m / 1024) * 2 ** (e - 15);
-    out[i] = h & 0x8000 ? -v : v;
-  }
-  return out;
+/**
+ * Carga el modelo (descarga la primera vez). Devuelve { estimate(rgba, w, h, signal) → Float32Array,
+ * profile }. `estimate` recibe los píxeles RGBA de un lienzo de w×h (múltiplos de 14) y devuelve la
+ * profundidad relativa (mayor = más cerca).
+ *
+ * onProgress({ phase: 'model', fraction: 0…1 | null }) durante la descarga y
+ * onProgress({ phase: 'prepare' }) mientras el dispositivo prepara el modelo.
+ */
+export async function loadDepthModel(onProgress = () => {}, signal) {
+  if (signal?.aborted) throw abortError();
+  const c = client ?? (client = startClient());
+  c.onProgress = onProgress;
+  if (c.profile) onProgress({ phase: 'prepare', fraction: null });
+
+  const abort = new Promise((_, reject) => {
+    signal?.addEventListener('abort', () => reject(abortError()), { once: true });
+  });
+  const profile = await Promise.race([c.ready, abort]);
+
+  const estimate = (rgba, w, h, estimateSignal) => new Promise((resolve, reject) => {
+    if (estimateSignal?.aborted) { reject(abortError()); return; }
+    const id = c.nextId++;
+    const timer = setTimeout(() => {
+      c.pending.delete(id);
+      stopClient(c);                // un fotograma colgado deja el worker inservible: se descarta
+      reject(modelError('timeout'));
+    }, ESTIMATE_TIMEOUT_MS);
+    const done = (fn) => (v) => { clearTimeout(timer); fn(v); };
+    c.pending.set(id, { resolve: done(resolve), reject: done(reject) });
+    estimateSignal?.addEventListener('abort', () => {
+      clearTimeout(timer);
+      c.pending.delete(id);
+      reject(abortError());
+    }, { once: true });
+    c.worker.postMessage({ type: 'estimate', id, rgba: rgba.buffer, w, h }, [rgba.buffer]);
+  });
+
+  return { estimate, profile };
 }

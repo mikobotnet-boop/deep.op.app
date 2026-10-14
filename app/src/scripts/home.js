@@ -10,6 +10,8 @@
  * de progreso, cancelación, vista previa del resultado y descarga del MP4.
  */
 
+import { DEPTHSTYLE_VERSION } from '../depthstyle/version.js';   // solo la versión: el motor se carga al pulsar «Procesar»
+
 /* =========================================================
    Ajustes
    ========================================================= */
@@ -103,6 +105,7 @@ export function initHome({ app }) {
   const warn = $('durationWarning');
   const processBtn = $('processBtn');
   const cancelBtn = $('cancelBtn');
+  $('versionTag').textContent = `v${DEPTHSTYLE_VERSION}`;
   const progressWrap = $('progressWrap');
   const progressBar = $('progressBar');
   const progressFill = $('progressFill');
@@ -362,9 +365,17 @@ export function initHome({ app }) {
   video.addEventListener('pause', () => cancelAnimationFrame(watchRaf));
 
   /* ----- Procesar: conversión a DepthStyle en el dispositivo ----- */
+  /** `fraction` 0…1 = barra con valor; `'wait'` = barra indeterminada; `null` = oculta. */
   function showProgress(fraction) {
     progressWrap.hidden = fraction === null;
     if (fraction === null) return;
+    const indeterminate = fraction === 'wait';
+    progressBar.classList.toggle('is-indeterminate', indeterminate);
+    if (indeterminate) {
+      progressFill.style.transform = '';
+      progressBar.removeAttribute('aria-valuenow');
+      return;
+    }
     const pct = Math.round(clamp(fraction, 0, 1) * 100);
     progressFill.style.transform = `scaleX(${pct / 100})`;
     progressBar.setAttribute('aria-valuenow', String(pct));
@@ -377,6 +388,13 @@ export function initHome({ app }) {
     resultVideo.load();
     downloadLink.removeAttribute('href');
     if (resultUrl) { URL.revokeObjectURL(resultUrl); resultUrl = null; }
+  }
+
+  /** Los errores propios de DepthStyle ya vienen en español; el resto se envuelve. */
+  function friendlyError(err) {
+    if (err?.name === 'DepthStyleError') return err.message;
+    if (!navigator.onLine) return 'Sin conexión a internet. La primera conversión necesita internet para descargar el modelo.';
+    return `No se pudo convertir el video: ${err?.message || 'error desconocido'}`;
   }
 
   const formatEta = (s) => (s < 60 ? `${Math.max(1, Math.round(s))} s` : `${Math.ceil(s / 60)} min`);
@@ -407,15 +425,29 @@ export function initHome({ app }) {
         start: state.start,
         end: state.end,
         signal: controller.signal,
-        onProgress: ({ phase, fraction, etaSeconds, profile }) => {
-          if (phase === 'model') {
-            showProgress(fraction);
-            setStatus(`Descargando el modelo de profundidad (solo la primera vez)… ${Math.round(fraction * 100)} %`, 'busy');
-          } else if (phase === 'frames') {
-            showProgress(fraction);
-            const eta = etaSeconds !== undefined ? ` · quedan ≈ ${formatEta(etaSeconds)}` : '';
-            const mode = profile === 'cpu' ? ' (sin GPU: será más lento)' : '';
-            setStatus(`Convirtiendo a DepthStyle… ${Math.round(fraction * 100)} %${eta}${mode}`, 'busy');
+        onProgress: (p) => {
+          if (job?.controller !== controller) return;
+          if (p.phase === 'model') {
+            if (p.fraction === null) {
+              showProgress('wait');
+              setStatus('Conectando y descargando el modelo de profundidad (solo la primera vez)…', 'busy');
+            } else {
+              showProgress(p.fraction);
+              setStatus(`Descargando el modelo de profundidad (solo la primera vez)… ${Math.round(p.fraction * 100)} %`, 'busy');
+            }
+          } else if (p.phase === 'prepare') {
+            showProgress('wait');
+            setStatus('Preparando el modelo en tu dispositivo… puede tardar un minuto la primera vez.', 'busy');
+          } else if (p.phase === 'frames') {
+            showProgress(p.fraction);
+            const mode = p.profile === 'gpu' ? 'GPU' : 'sin GPU (más lento)';
+            if (p.frame === 0) {
+              setStatus(`Procesando el primer fotograma de ${p.total}… el primero tarda más. Modo: ${mode}.`, 'busy');
+            } else {
+              const eta = p.etaSeconds !== undefined ? ` · quedan ≈ ${formatEta(p.etaSeconds)}` : '';
+              const speed = ` · ${p.secondsPerFrame.toFixed(1).replace('.', ',')} s por fotograma`;
+              setStatus(`Convirtiendo a DepthStyle… ${Math.round(p.fraction * 100)} % (${p.frame}/${p.total})${eta}${speed} · ${mode}`, 'busy');
+            }
           } else {
             showProgress(1);
             setStatus('Guardando el video…', 'busy');
@@ -432,7 +464,7 @@ export function initHome({ app }) {
     } catch (err) {
       showProgress(null);
       if (err?.name === 'AbortError') setStatus('Conversión cancelada.', 'ok');
-      else setStatus(`No se pudo convertir: ${err?.message || 'error desconocido'}`, 'error');
+      else setStatus(friendlyError(err), 'error');
     } finally {
       job = null;
       setBusy(false);

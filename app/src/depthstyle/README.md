@@ -9,7 +9,8 @@ Convierte un video al formato DepthStyle: el video mostrado como mapa de profund
 |---|---|---|
 | `config.js` | Todos los ajustes: modelo, versiones de librerías, fps, resolución, aspecto | Para afinar el look o el rendimiento |
 | `look.js` | El aspecto: normalizar profundidad y pintarla en gris (funciones puras) | Para cambiar cómo se ve |
-| `model.js` | Compatibilidad del navegador y carga del modelo de profundidad | Para cambiar de modelo o de runtime |
+| `model.js` | Compatibilidad del navegador; cliente del worker con tiempos máximos y errores en español | Para cambiar mensajes o tiempos |
+| `worker.js` | El modelo de profundidad, en un hilo aparte (descarga, preparación, inferencia) | Para cambiar de modelo o de runtime |
 | `video.js` | Abrir video, buscar fotogramas, elegir códec | Rara vez |
 | `convert.js` | La tubería completa fotograma → profundidad → gris → MP4 | Para añadir pasos (overlays, audio) |
 | `version.js` / `CHANGELOG.md` | Versión propia de DepthStyle y su historia | En cada mejora |

@@ -4,6 +4,6 @@
  *   const { convertToDepthStyle } = await import('../depthstyle/index.js');
  */
 export { convertToDepthStyle } from './convert.js';
-export { checkSupport, loadDepthModel } from './model.js';
+export { checkSupport, loadDepthModel, DepthStyleError } from './model.js';
 export { normalizeDepth, paintDepth } from './look.js';
 export { DEPTHSTYLE_VERSION } from './version.js';

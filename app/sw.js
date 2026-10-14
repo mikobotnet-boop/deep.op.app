@@ -14,7 +14,7 @@
  * Las rutas son relativas al propio sw.js, así funciona igual en /app/ que en la raíz del sitio.
  */
 
-const VERSION = 'v5';
+const VERSION = 'v6';
 const CACHE = `deepop-${VERSION}`;
 const NETWORK_TIMEOUT_MS = 4000;
 
@@ -40,6 +40,7 @@ const PRECACHE = [
   'src/depthstyle/index.js',
   'src/depthstyle/config.js',
   'src/depthstyle/model.js',
+  'src/depthstyle/worker.js',
   'src/depthstyle/look.js',
   'src/depthstyle/video.js',
   'src/depthstyle/convert.js',

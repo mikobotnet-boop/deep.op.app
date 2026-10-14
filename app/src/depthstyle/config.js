@@ -18,6 +18,9 @@ export const OUT_LONG_SIDE = 1280;      // lado largo máximo del video de salid
 export const KEYFRAME_EVERY_S = 2;
 export const MAX_QUEUE = 6;             // fotogramas esperando al codificador antes de pausar
 export const SEEK_TIMEOUT_MS = 8000;
+export const MODEL_FILE_MIN_BYTES = 1e6;   // solo los archivos grandes cuentan para el % de descarga (no los .json)
+export const STALL_TIMEOUT_MS = 120000;    // sin ninguna noticia del modelo durante tanto tiempo = se da por colgado
+export const ESTIMATE_TIMEOUT_MS = 90000;  // máximo por fotograma
 
 // Aspecto de DepthStyle
 export const DEPTH_GAMMA = 1.35;        // >1 oscurece lo cercano y deja el fondo en niebla clara

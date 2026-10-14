@@ -137,6 +137,14 @@
 .project-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .project-title { margin: 0; font-size: 20px; font-weight: 500; }
 .project-title:focus { outline: none; }          /* solo recibe foco por código, al abrir el panel */
+.tag-version {
+  padding: 2px 9px;
+  border: 1px solid var(--violet-soft);
+  border-radius: 999px;
+  color: var(--violet-soft);
+  font-size: 12px;
+  letter-spacing: .04em;
+}
 .project-note { margin: 0 0 18px; color: var(--muted); font-size: 14px; line-height: 1.45; }
 
 /* Zona de carga: el <input> es real (accesible con teclado) pero invisible */
@@ -263,6 +271,15 @@
 .progress { margin: 0 0 14px; }
 .progress-bar { height: 6px; border-radius: 3px; background: var(--active); overflow: hidden; }
 .progress-fill { display: block; height: 100%; background: var(--accent-solid); transform: scaleX(0); transform-origin: left; }
+/* Barra indeterminada: sin movimiento queda un tramo fijo; con movimiento recorre la barra (transform) */
+.progress-bar.is-indeterminate .progress-fill { width: 40%; transform: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .progress-bar.is-indeterminate .progress-fill { animation: progress-wait 1.4s var(--ease-out) infinite; }
+}
+@keyframes progress-wait {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
 .result { display: grid; gap: 12px; margin: 0 0 14px; }
 .result .btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 
