@@ -1,5 +1,14 @@
 # Changelog de DepthStyle
 
+## 1.0.2 — 14 oct 2026
+- Si la GPU del teléfono no responde (preparación del modelo o primer fotograma), la app cambia sola al modo
+  CPU y lo recuerda. `?cpu=1` fuerza la CPU y `?cpu=0` vuelve a probar la GPU.
+- Los tiempos agotados ya no se confunden: «el modelo tardó en cargarse» (conexión) vs «un fotograma tardó»
+  (dispositivo) vs «la GPU no respondió».
+- `sw.js` (v7): los archivos propios se revalidan siempre con el servidor, para que no se mezclen versiones
+  (causa del error «does not provide an export named ESTIMATE_TIMEOUT_MS»).
+- La salida float16 del modelo se lee bien tanto si llega como Uint16Array como Float16Array.
+
 ## 1.0.1 — 14 oct 2026
 - El modelo corre en un worker (`worker.js`): la pantalla y «Cancelar» ya no se congelan.
 - Estados claros: descarga del modelo, preparación del modelo y «primer fotograma»; % de descarga real

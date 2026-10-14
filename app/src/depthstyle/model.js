@@ -21,12 +21,30 @@ export class DepthStyleError extends Error {
 
 const MESSAGES = {
   network: 'Sin conexión con el servidor de librerías. La primera conversión necesita internet para descargar el modelo (≈50 MB). Conéctate y vuelve a intentarlo.',
-  timeout: 'El dispositivo tardó demasiado en responder. Cierra otras apps, prueba con un fragmento más corto y vuelve a intentarlo.',
+  timeoutLoad: 'El modelo tardó demasiado en cargarse (descarga o preparación). Revisa tu conexión y vuelve a intentarlo.',
+  timeoutFrame: 'Un fotograma tardó demasiado en calcularse. Cierra otras apps, prueba con un fragmento más corto y vuelve a intentarlo.',
+  gpuTimeout: 'La GPU del teléfono no respondió a tiempo. Cambié al modo sin GPU (más lento, pero más compatible): pulsa «Procesar video» otra vez. Para volver a probar la GPU, abre la app con ?cpu=0 al final de la dirección.',
   worker: 'No se pudo iniciar el motor de conversión en este navegador. Prueba con Chrome actualizado.',
 };
 
 function modelError(code, detail) {
   return new DepthStyleError(code, MESSAGES[code] ?? `No se pudo cargar el modelo de profundidad${detail ? ` (${detail})` : ''}.`);
+}
+
+/* Preferencia «sin GPU»: se activa sola si la GPU se cuelga, o a mano con ?cpu=1 (y ?cpu=0 la quita). */
+const CPU_KEY = 'depthstyle.forceCpu';
+function readCpuPref() {
+  try {
+    const q = new URLSearchParams(location.search).get('cpu');
+    if (q === '1') localStorage.setItem(CPU_KEY, '1');
+    if (q === '0') localStorage.removeItem(CPU_KEY);
+    return localStorage.getItem(CPU_KEY) === '1';
+  } catch { return false; }
+}
+let forceCpu = readCpuPref();
+function preferCpu() {
+  forceCpu = true;
+  try { localStorage.setItem(CPU_KEY, '1'); } catch { /* sin almacenamiento: solo esta sesión */ }
 }
 
 const abortError = () => new DOMException('Conversión cancelada.', 'AbortError');
@@ -55,7 +73,7 @@ function stopClient(c) {
 
 function startClient() {
   const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
-  const c = { worker, onProgress: () => {}, pending: new Map(), nextId: 1, profile: null, watchdog: 0 };
+  const c = { worker, onProgress: () => {}, pending: new Map(), nextId: 1, profile: null, watchdog: 0, gpu: false, downloading: false };
 
   const fail = (err) => {
     clearTimeout(c.watchdog);
@@ -67,7 +85,11 @@ function startClient() {
   // Si el modelo no da señales de vida durante STALL_TIMEOUT_MS (descarga o preparación), se corta.
   const arm = () => {
     clearTimeout(c.watchdog);
-    c.watchdog = setTimeout(() => fail(modelError('timeout')), STALL_TIMEOUT_MS);
+    c.watchdog = setTimeout(() => {
+      // Sin descarga en curso y con GPU: lo que se ha colgado es la preparación del modelo en la GPU
+      if (c.gpu && !c.downloading) { preferCpu(); fail(modelError('gpuTimeout')); }
+      else fail(modelError('timeoutLoad'));
+    }, STALL_TIMEOUT_MS);
   };
 
   c.ready = new Promise((resolve, reject) => { c.resolveReady = resolve; c.rejectReady = reject; });
@@ -75,8 +97,9 @@ function startClient() {
 
   worker.onmessage = (e) => {
     const m = e.data;
-    if (m.type === 'progress') { arm(); c.onProgress({ phase: 'model', fraction: m.fraction }); }
-    else if (m.type === 'phase') { arm(); c.onProgress({ phase: 'prepare', fraction: null }); }
+    if (m.type === 'profile') { c.gpu = m.name === 'gpu'; }
+    else if (m.type === 'progress') { c.downloading = m.fraction < 1; arm(); c.onProgress({ phase: 'model', fraction: m.fraction }); }
+    else if (m.type === 'phase') { c.downloading = false; arm(); c.onProgress({ phase: 'prepare', fraction: null }); }
     else if (m.type === 'ready') { clearTimeout(c.watchdog); c.profile = m.profile; c.resolveReady(m.profile); }
     else if (m.type === 'result') { c.pending.get(m.id)?.resolve(new Float32Array(m.depth)); c.pending.delete(m.id); }
     else if (m.type === 'error') {
@@ -91,7 +114,7 @@ function startClient() {
 
   c.onProgress({ phase: 'model', fraction: null });
   arm();
-  worker.postMessage({ type: 'load' });
+  worker.postMessage({ type: 'load', cpu: forceCpu });
   return c;
 }
 
@@ -120,7 +143,8 @@ export async function loadDepthModel(onProgress = () => {}, signal) {
     const timer = setTimeout(() => {
       c.pending.delete(id);
       stopClient(c);                // un fotograma colgado deja el worker inservible: se descarta
-      reject(modelError('timeout'));
+      if (c.profile?.name === 'gpu') { preferCpu(); reject(modelError('gpuTimeout')); }
+      else reject(modelError('timeoutFrame'));
     }, ESTIMATE_TIMEOUT_MS);
     const done = (fn) => (v) => { clearTimeout(timer); fn(v); };
     c.pending.set(id, { resolve: done(resolve), reject: done(reject) });

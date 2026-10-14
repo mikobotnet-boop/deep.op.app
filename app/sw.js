@@ -14,7 +14,7 @@
  * Las rutas son relativas al propio sw.js, así funciona igual en /app/ que en la raíz del sitio.
  */
 
-const VERSION = 'v6';
+const VERSION = 'v7';
 const CACHE = `deepop-${VERSION}`;
 const NETWORK_TIMEOUT_MS = 4000;
 
@@ -98,7 +98,9 @@ function timeout(ms) {
 async function networkFirst(request) {
   const cache = await caches.open(CACHE);
 
-  const network = fetch(request).then((response) => {
+  // cache: 'no-cache' obliga a revalidar con el servidor: así no se mezclan archivos de versiones distintas
+  // (GitHub Pages permite al navegador reutilizar una copia ~10 min).
+  const network = fetch(request, { cache: 'no-cache' }).then((response) => {
     // Las respuestas con redirección no se guardan: el navegador las rechaza al reutilizarlas.
     if (response.status === 200 && !response.redirected) cache.put(request, response.clone()).catch(() => {});
     return response;

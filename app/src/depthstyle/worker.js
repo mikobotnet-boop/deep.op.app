@@ -2,10 +2,11 @@
  * worker.js — el modelo de profundidad vive aquí, en un hilo aparte, para que la pantalla (y el
  * botón Cancelar) no se congelen mientras se calcula.
  *
- * Mensajes que recibe:   { type: 'load' }
+ * Mensajes que recibe:   { type: 'load', cpu?: true }   (cpu: true = no intentar la GPU)
  *                        { type: 'estimate', id, rgba: ArrayBuffer, w, h }
  * Mensajes que envía:    { type: 'progress', fraction }      descarga del modelo (0…1)
  *                        { type: 'phase', phase: 'prepare' } descarga lista; se prepara el modelo
+ *                        { type: 'profile', name }           'gpu' | 'cpu' (el que se intenta cargar)
  *                        { type: 'ready', profile }
  *                        { type: 'result', id, depth: ArrayBuffer }
  *                        { type: 'error', code, message, id? }   code: 'network' | 'load' | 'estimate'
@@ -18,7 +19,8 @@ let Tensor = null;
 
 const NETWORK_RE = /failed to fetch|networkerror|network error|load failed|dynamically imported|fetch/i;
 
-async function pickProfile() {
+async function pickProfile(forceCpu) {
+  if (forceCpu) return { name: 'cpu', ...PROFILES.cpu };
   try {
     const adapter = await navigator.gpu?.requestAdapter();
     if (adapter?.features.has('shader-f16')) return { name: 'gpu', ...PROFILES.gpu };
@@ -26,7 +28,7 @@ async function pickProfile() {
   return { name: 'cpu', ...PROFILES.cpu };
 }
 
-async function load() {
+async function load(forceCpu) {
   let tf;
   try {
     tf = await import(TRANSFORMERS_URL);
@@ -54,7 +56,8 @@ async function load() {
     if (fraction >= 1 && !prepared) { prepared = true; self.postMessage({ type: 'phase', phase: 'prepare' }); }
   };
 
-  const first = await pickProfile();
+  const first = await pickProfile(forceCpu);
+  self.postMessage({ type: 'profile', name: first.name });   // el cliente lo usa para saber si un bloqueo es de la GPU
   const attempts = first.name === 'gpu' ? [first, { name: 'cpu', ...PROFILES.cpu }] : [first];
   let profile = null;
   let lastError = null;
@@ -91,7 +94,8 @@ async function estimate(rgbaBuffer, w, h) {
   }
   const out = await model({ pixel_values: new Tensor('float32', data, [1, 3, h, w]) });
   const t = out.predicted_depth;
-  const depth = t.type === 'float16' ? halfToFloat(t.data) : Float32Array.from(t.data);
+  // Con float16 los datos llegan como bits (Uint16Array); si el navegador ya da Float16Array, basta copiarlos
+  const depth = (t.type === 'float16' && t.data instanceof Uint16Array) ? halfToFloat(t.data) : Float32Array.from(t.data);
   t.dispose?.();
   return depth;
 }
@@ -100,7 +104,7 @@ self.onmessage = async (e) => {
   const m = e.data;
   if (m.type === 'load') {
     try {
-      const profile = await load();
+      const profile = await load(m.cpu === true);
       self.postMessage({ type: 'ready', profile });
     } catch (err) {
       self.postMessage({ type: 'error', code: err.code || 'load', message: String(err.message || err) });
