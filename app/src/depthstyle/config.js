@@ -11,18 +11,21 @@ export const MUXER_URL = 'https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.2/+esm';
 
 // Con GPU (WebGPU) se puede estimar a más resolución y más fotogramas por segundo.
 export const PROFILES = {
-  gpu: { device: 'webgpu', dtype: 'fp16', depthLong: 392, fps: 24 },
-  cpu: { device: 'wasm',   dtype: 'q8',   depthLong: 308, fps: 12 },
+  gpu: { device: 'webgpu', dtype: 'fp16', depthLong: 392 },
+  cpu: { device: 'wasm',   dtype: 'q8',   depthLong: 308 },
 };
 export const OUT_LONG_SIDE = 1280;      // lado largo máximo del video de salida (720p)
 export const KEYFRAME_EVERY_S = 2;
+export const OUTPUT_FPS_DEFAULT = 30;    // si no se pueden medir los fps del video original
+export const OUTPUT_FPS_MAX = 30;        // tope de la salida (un video de 60 fps sale a 30; uno de 50, a 25)
+export const FPS_PROBE_MS = 1500;        // tiempo máximo para medir los fps del video original
 export const MAX_QUEUE = 6;             // fotogramas esperando al codificador antes de pausar
 export const SEEK_TIMEOUT_MS = 8000;
 export const MODEL_FILE_MIN_BYTES = 1e6;   // solo los archivos grandes cuentan para el % de descarga (no los .json)
 export const STALL_TIMEOUT_MS = 120000;    // sin ninguna noticia del modelo durante tanto tiempo = se da por colgado
 export const ESTIMATE_TIMEOUT_MS = 90000;  // máximo por fotograma
 export const TARGET_PROCESSING_S = 90;     // tiempo que se intenta no superar calculando profundidad
-export const MAX_STRIDE = 6;               // como mucho se calcula 1 de cada 6 fotogramas (el resto se interpola)
+export const MAX_KEY_GAP_S = 0.5;          // como mucho pasan 0,5 s entre dos fotogramas con profundidad calculada (el resto se interpola)
 export const PROBE_TIMEOUT_MS = 5000;      // comprobación rápida de conexión antes de culpar a la GPU
 
 // Aspecto de DepthStyle

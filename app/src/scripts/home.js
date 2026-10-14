@@ -416,6 +416,7 @@ export function initHome({ app }) {
     setBusy(true);
     showProgress(0);
     setStatus('Preparando la conversión…', 'busy');
+    let outFps = null;
 
     try {
       const { convertToDepthStyle } = await import('../depthstyle/index.js');
@@ -439,10 +440,11 @@ export function initHome({ app }) {
             showProgress('wait');
             setStatus('Preparando el modelo en tu dispositivo… puede tardar un minuto la primera vez.', 'busy');
           } else if (p.phase === 'frames') {
+            outFps = p.fps;
             showProgress(p.fraction);
             const mode = p.profile === 'gpu' ? 'GPU' : 'sin GPU (más lento)';
             if (p.frame === 0) {
-              setStatus(`Procesando el primer fotograma de ${p.total}… el primero tarda más. Modo: ${mode}.`, 'busy');
+              setStatus(`Procesando el primer fotograma de ${p.total} (salida a ${p.fps} fps)… el primero tarda más. Modo: ${mode}.`, 'busy');
             } else {
               const eta = p.etaSeconds !== undefined ? ` · quedan ≈ ${formatEta(p.etaSeconds)}` : '';
               const speed = p.secondsPerFrame !== undefined ? ` · ${p.secondsPerFrame.toFixed(1).replace('.', ',')} s por fotograma calculado` : '';
@@ -461,7 +463,7 @@ export function initHome({ app }) {
       downloadLink.href = resultUrl;
       resultBox.hidden = false;
       showProgress(null);
-      setStatus(`Listo: DepthStyle de ${Math.round(seconds)} s (sin sonido).`, 'ok');
+      setStatus(`Listo: DepthStyle de ${Math.round(seconds)} s${outFps ? ` a ${outFps} fps` : ''} (sin sonido).`, 'ok');
     } catch (err) {
       showProgress(null);
       if (err?.name === 'AbortError') setStatus('Conversión cancelada.', 'ok');

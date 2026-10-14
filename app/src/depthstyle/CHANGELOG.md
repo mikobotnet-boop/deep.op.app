@@ -1,5 +1,14 @@
 # Changelog de DepthStyle
 
+## 1.0.4 — 14 oct 2026
+- La salida va a los mismos fps que el video original (`fps.js`), con tope de 30: 24 → 24, 30 → 30,
+  60 → 30, 50 → 25. Antes era fija (12 fps sin GPU, 24 con GPU) y no dependía del video.
+- Los fps se miden reproduciendo un instante el fragmento (requestVideoFrameCallback); si no se puede,
+  se usa 30 (`OUTPUT_FPS_DEFAULT` en `config.js`).
+- El ritmo adaptativo ahora limita el hueco entre fotogramas con profundidad a 0,5 s (`MAX_KEY_GAP_S`),
+  no a un número fijo de fotogramas: el tiempo de conversión no sube al subir los fps.
+- El estado y el mensaje final indican los fps de salida.
+
 ## 1.0.3 — 14 oct 2026
 - Ritmo adaptativo (`pacing.js`): si el dispositivo es lento (sobre todo sin GPU) se calcula la profundidad
   solo en 1 de cada 2–6 fotogramas y los de en medio se interpolan, para no pasar de ~90 s de cálculo.

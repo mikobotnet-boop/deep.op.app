@@ -2,8 +2,9 @@
  * convert.js — la conversión completa: fotograma → profundidad → gris → MP4.
  */
 
-import { MUXER_URL, OUT_LONG_SIDE, KEYFRAME_EVERY_S, MAX_QUEUE, TARGET_PROCESSING_S, MAX_STRIDE } from './config.js';
+import { MUXER_URL, OUT_LONG_SIDE, KEYFRAME_EVERY_S, MAX_QUEUE, TARGET_PROCESSING_S, MAX_KEY_GAP_S } from './config.js';
 import { chooseStride } from './pacing.js';
+import { detectFps } from './fps.js';
 import { checkSupport, loadDepthModel } from './model.js';
 import { normalizeDepth, paintDepth } from './look.js';
 import { even, multipleOf14, abortError, seek, openVideo, pickCodec } from './video.js';
@@ -21,12 +22,13 @@ import { even, multipleOf14, abortError, seek, openVideo, pickCodec } from './vi
  * @param {number}   o.end
  * @param {AbortSignal} [o.signal]
  * @param {(e: {phase: 'model'|'prepare'|'frames'|'finish', fraction: number|null, frame?: number,
- *             total?: number, stride?: number, secondsPerFrame?: number, etaSeconds?: number,
+ *             total?: number, stride?: number, fps?: number, secondsPerFrame?: number, etaSeconds?: number,
  *             profile?: string}) => void} [o.onProgress]
  * @param {{estimate: Function, profile: object}} [o.depth]  estimador ya cargado (para pruebas)
+ * @param {number}   [o.fps]            fps de salida (por defecto se miden en el video original)
  * @param {number}   [o.targetSeconds]  tiempo de cálculo que se intenta no superar (ver config.js)
  */
-export async function convertToDepthStyle({ url, start, end, signal, onProgress = () => {}, depth, targetSeconds = TARGET_PROCESSING_S }) {
+export async function convertToDepthStyle({ url, start, end, signal, onProgress = () => {}, depth, targetSeconds = TARGET_PROCESSING_S, fps: fpsOverride }) {
   const check = checkSupport();
   if (!check.ok) throw new Error(check.reason);
   if (signal?.aborted) throw abortError();
@@ -48,7 +50,9 @@ export async function convertToDepthStyle({ url, start, end, signal, onProgress 
     const dW = multipleOf14(vw * dk);
     const dH = multipleOf14(vh * dk);
 
-    const fps = profile.fps;
+    // La salida va a los mismos fps que el video original (con tope); se mide en el propio video
+    const fps = fpsOverride ?? await detectFps(video, start, end);
+    const maxStride = Math.max(1, Math.round(fps * MAX_KEY_GAP_S));
     const total = Math.max(1, Math.round((end - start) * fps));
     const bitrate = Math.min(12e6, Math.max(2e6, Math.round(outW * outH * fps * 0.2)));
 
@@ -107,13 +111,13 @@ export async function convertToDepthStyle({ url, start, end, signal, onProgress 
       estimates++;
       if (estimates >= 2) {          // el primero incluye la compilación del modelo: no cuenta
         secondsPerKey = secondsPerKey ? secondsPerKey * 0.6 + sec * 0.4 : sec;
-        stride = chooseStride({ secondsPerKey, total, targetSeconds, maxStride: MAX_STRIDE });
+        stride = chooseStride({ secondsPerKey, total, targetSeconds, maxStride });
       }
       return normalizeDepth(raw, range);
     };
 
     // El primer fotograma tarda más (el dispositivo compila el modelo): se avisa antes de empezar
-    onProgress({ phase: 'frames', fraction: 0, frame: 0, total, stride, profile: profile.name });
+    onProgress({ phase: 'frames', fraction: 0, frame: 0, total, stride, fps, profile: profile.name });
 
     for (let i = 0; i < total; i++) {
       if (signal?.aborted) throw abortError();
@@ -153,6 +157,7 @@ export async function convertToDepthStyle({ url, start, end, signal, onProgress 
         frame: done,
         total,
         stride,
+        fps,
         secondsPerFrame: secondsPerKey || undefined,     // por fotograma calculado
         etaSeconds: estimates >= 3 ? Math.ceil((total - done) / stride) * secondsPerKey : undefined,
         profile: profile.name,
