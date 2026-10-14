@@ -6,7 +6,7 @@
  *  - Proyecto: elegir un video (clic, teclado o arrastrar), recortar un fragmento de hasta
  *    60 s con dos tiradores (ratón, dedo o teclado) y ver la vista previa solo de ese fragmento.
  *
- * «Procesar video» convierte el fragmento a DepthStyle en el propio dispositivo (depthstyle.js): barra
+ * «Procesar video» convierte el fragmento a DepthStyle en el propio dispositivo (carpeta src/depthstyle/): barra
  * de progreso, cancelación, vista previa del resultado y descarga del MP4.
  */
 
@@ -400,7 +400,7 @@ export function initHome({ app }) {
     setStatus('Preparando la conversión…', 'busy');
 
     try {
-      const { convertToDepthStyle } = await import('./depthstyle.js');
+      const { convertToDepthStyle } = await import('../depthstyle/index.js');
 
       const blob = await convertToDepthStyle({
         url: state.url,
