@@ -5,7 +5,8 @@
  * entre conversiones. Aquí se gestionan los tiempos máximos y los mensajes de error en español.
  */
 
-import { STALL_TIMEOUT_MS, ESTIMATE_TIMEOUT_MS } from './config.js';
+import { STALL_TIMEOUT_MS, ESTIMATE_TIMEOUT_MS, TRANSFORMERS_URL, PROBE_TIMEOUT_MS } from './config.js';
+import { DEPTHSTYLE_VERSION } from './version.js';
 
 /* =========================================================
    Errores y compatibilidad
@@ -31,20 +32,30 @@ function modelError(code, detail) {
   return new DepthStyleError(code, MESSAGES[code] ?? `No se pudo cargar el modelo de profundidad${detail ? ` (${detail})` : ''}.`);
 }
 
-/* Preferencia «sin GPU»: se activa sola si la GPU se cuelga, o a mano con ?cpu=1 (y ?cpu=0 la quita). */
+/* Preferencia «sin GPU»: se activa sola si la GPU se cuelga, o a mano con ?cpu=1 (y ?cpu=0 la quita).
+   Se guarda junto con la versión de DepthStyle: en cuanto sale una versión nueva se vuelve a probar la GPU. */
 const CPU_KEY = 'depthstyle.forceCpu';
 function readCpuPref() {
   try {
     const q = new URLSearchParams(location.search).get('cpu');
-    if (q === '1') localStorage.setItem(CPU_KEY, '1');
+    if (q === '1') localStorage.setItem(CPU_KEY, DEPTHSTYLE_VERSION);
     if (q === '0') localStorage.removeItem(CPU_KEY);
-    return localStorage.getItem(CPU_KEY) === '1';
+    return localStorage.getItem(CPU_KEY) === DEPTHSTYLE_VERSION;
   } catch { return false; }
 }
 let forceCpu = readCpuPref();
 function preferCpu() {
   forceCpu = true;
-  try { localStorage.setItem(CPU_KEY, '1'); } catch { /* sin almacenamiento: solo esta sesión */ }
+  try { localStorage.setItem(CPU_KEY, DEPTHSTYLE_VERSION); } catch { /* sin almacenamiento: solo esta sesión */ }
+}
+
+/** ¿Hay conexión con el servidor de librerías? Se comprueba antes de culpar a la GPU de un bloqueo. */
+async function serverReachable() {
+  if (navigator.onLine === false) return false;
+  try {
+    await fetch(TRANSFORMERS_URL, { method: 'HEAD', mode: 'no-cors', cache: 'no-store', signal: AbortSignal.timeout(PROBE_TIMEOUT_MS) });
+    return true;
+  } catch { return false; }
 }
 
 const abortError = () => new DOMException('Conversión cancelada.', 'AbortError');
@@ -67,6 +78,7 @@ export function checkSupport() {
 let client = null;
 
 function stopClient(c) {
+  c.dead = true;
   c.worker.terminate();
   if (client === c) client = null;
 }
@@ -76,6 +88,7 @@ function startClient() {
   const c = { worker, onProgress: () => {}, pending: new Map(), nextId: 1, profile: null, watchdog: 0, gpu: false, downloading: false };
 
   const fail = (err) => {
+    if (c.dead) return;
     clearTimeout(c.watchdog);
     c.rejectReady?.(err);
     for (const p of c.pending.values()) p.reject(err);
@@ -85,9 +98,12 @@ function startClient() {
   // Si el modelo no da señales de vida durante STALL_TIMEOUT_MS (descarga o preparación), se corta.
   const arm = () => {
     clearTimeout(c.watchdog);
-    c.watchdog = setTimeout(() => {
-      // Sin descarga en curso y con GPU: lo que se ha colgado es la preparación del modelo en la GPU
-      if (c.gpu && !c.downloading) { preferCpu(); fail(modelError('gpuTimeout')); }
+    c.watchdog = setTimeout(async () => {
+      // Con GPU y sin descarga en curso, solo se culpa a la GPU si hay conexión con el servidor
+      // (si no la hay, el bloqueo es de red y no se cambia ninguna preferencia).
+      const gpuHung = c.gpu && !c.downloading && await serverReachable();
+      if (c.dead || c.profile) return;          // mientras se comprobaba, el modelo se cargó o ya falló
+      if (gpuHung) { preferCpu(); fail(modelError('gpuTimeout')); }
       else fail(modelError('timeoutLoad'));
     }, STALL_TIMEOUT_MS);
   };

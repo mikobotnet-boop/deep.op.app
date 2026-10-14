@@ -445,8 +445,9 @@ export function initHome({ app }) {
               setStatus(`Procesando el primer fotograma de ${p.total}… el primero tarda más. Modo: ${mode}.`, 'busy');
             } else {
               const eta = p.etaSeconds !== undefined ? ` · quedan ≈ ${formatEta(p.etaSeconds)}` : '';
-              const speed = ` · ${p.secondsPerFrame.toFixed(1).replace('.', ',')} s por fotograma`;
-              setStatus(`Convirtiendo a DepthStyle… ${Math.round(p.fraction * 100)} % (${p.frame}/${p.total})${eta}${speed} · ${mode}`, 'busy');
+              const speed = p.secondsPerFrame !== undefined ? ` · ${p.secondsPerFrame.toFixed(1).replace('.', ',')} s por fotograma calculado` : '';
+              const pace = p.stride > 1 ? ` · se calcula 1 de cada ${p.stride} fotogramas y el resto se interpola` : '';
+              setStatus(`Convirtiendo a DepthStyle… ${Math.round(p.fraction * 100)} % (${p.frame}/${p.total})${eta}${speed}${pace} · ${mode}`, 'busy');
             }
           } else {
             showProgress(1);

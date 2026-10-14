@@ -1,5 +1,13 @@
 # Changelog de DepthStyle
 
+## 1.0.3 — 14 oct 2026
+- Ritmo adaptativo (`pacing.js`): si el dispositivo es lento (sobre todo sin GPU) se calcula la profundidad
+  solo en 1 de cada 2–6 fotogramas y los de en medio se interpolan, para no pasar de ~90 s de cálculo.
+  Con GPU rápida se calculan todos. Límites en `config.js` (`TARGET_PROCESSING_S`, `MAX_STRIDE`).
+- Antes de culpar a la GPU de un bloqueo se comprueba la conexión: si no hay red, el mensaje es de conexión
+  y no se fija el modo CPU.
+- El modo CPU recordado va ligado a la versión: con una versión nueva se vuelve a probar la GPU.
+
 ## 1.0.2 — 14 oct 2026
 - Si la GPU del teléfono no responde (preparación del modelo o primer fotograma), la app cambia sola al modo
   CPU y lo recuerda. `?cpu=1` fuerza la CPU y `?cpu=0` vuelve a probar la GPU.

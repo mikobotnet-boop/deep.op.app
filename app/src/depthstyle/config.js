@@ -21,6 +21,9 @@ export const SEEK_TIMEOUT_MS = 8000;
 export const MODEL_FILE_MIN_BYTES = 1e6;   // solo los archivos grandes cuentan para el % de descarga (no los .json)
 export const STALL_TIMEOUT_MS = 120000;    // sin ninguna noticia del modelo durante tanto tiempo = se da por colgado
 export const ESTIMATE_TIMEOUT_MS = 90000;  // máximo por fotograma
+export const TARGET_PROCESSING_S = 90;     // tiempo que se intenta no superar calculando profundidad
+export const MAX_STRIDE = 6;               // como mucho se calcula 1 de cada 6 fotogramas (el resto se interpola)
+export const PROBE_TIMEOUT_MS = 5000;      // comprobación rápida de conexión antes de culpar a la GPU
 
 // Aspecto de DepthStyle
 export const DEPTH_GAMMA = 1.35;        // >1 oscurece lo cercano y deja el fondo en niebla clara

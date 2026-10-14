@@ -2,7 +2,8 @@
  * convert.js — la conversión completa: fotograma → profundidad → gris → MP4.
  */
 
-import { MUXER_URL, OUT_LONG_SIDE, KEYFRAME_EVERY_S, MAX_QUEUE } from './config.js';
+import { MUXER_URL, OUT_LONG_SIDE, KEYFRAME_EVERY_S, MAX_QUEUE, TARGET_PROCESSING_S, MAX_STRIDE } from './config.js';
+import { chooseStride } from './pacing.js';
 import { checkSupport, loadDepthModel } from './model.js';
 import { normalizeDepth, paintDepth } from './look.js';
 import { even, multipleOf14, abortError, seek, openVideo, pickCodec } from './video.js';
@@ -20,11 +21,12 @@ import { even, multipleOf14, abortError, seek, openVideo, pickCodec } from './vi
  * @param {number}   o.end
  * @param {AbortSignal} [o.signal]
  * @param {(e: {phase: 'model'|'prepare'|'frames'|'finish', fraction: number|null, frame?: number,
- *             total?: number, secondsPerFrame?: number, etaSeconds?: number,
+ *             total?: number, stride?: number, secondsPerFrame?: number, etaSeconds?: number,
  *             profile?: string}) => void} [o.onProgress]
  * @param {{estimate: Function, profile: object}} [o.depth]  estimador ya cargado (para pruebas)
+ * @param {number}   [o.targetSeconds]  tiempo de cálculo que se intenta no superar (ver config.js)
  */
-export async function convertToDepthStyle({ url, start, end, signal, onProgress = () => {}, depth }) {
+export async function convertToDepthStyle({ url, start, end, signal, onProgress = () => {}, depth, targetSeconds = TARGET_PROCESSING_S }) {
   const check = checkSupport();
   if (!check.ok) throw new Error(check.reason);
   if (signal?.aborted) throw abortError();
@@ -81,25 +83,56 @@ export async function convertToDepthStyle({ url, start, end, signal, onProgress 
     });
     encoder.configure(config);
 
-    // Fotograma a fotograma
+    // Fotograma a fotograma. La profundidad se calcula solo en los fotogramas «clave» (cada `stride`)
+    // y los de en medio se interpolan: con un dispositivo rápido stride = 1 (se calculan todos).
     const range = { lo: null, hi: null };
     const prev = new Float32Array(dW * dH).fill(-1);
+    const blend = new Float32Array(dW * dH);
     const keyEvery = Math.max(1, Math.round(KEYFRAME_EVERY_S * fps));
-    const t0 = performance.now();
+    const last = total - 1;
+    let stride = 1;
+    let secondsPerKey = 0;           // media reciente de lo que tarda un fotograma clave
+    let estimates = 0;
+    let A = null; let aIdx = -1;     // clave anterior
+    let B = null; let bIdx = -1;     // clave siguiente
+
+    const depthAt = async (idx) => {
+      const t = Math.min(start + idx / fps, Math.max(start, end - 0.001));
+      await seek(video, t);
+      inCtx.drawImage(video, 0, 0, dW, dH);
+      const rgba = inCtx.getImageData(0, 0, dW, dH).data;
+      const s0 = performance.now();
+      const raw = await model.estimate(rgba, dW, dH, signal);
+      const sec = (performance.now() - s0) / 1000;
+      estimates++;
+      if (estimates >= 2) {          // el primero incluye la compilación del modelo: no cuenta
+        secondsPerKey = secondsPerKey ? secondsPerKey * 0.6 + sec * 0.4 : sec;
+        stride = chooseStride({ secondsPerKey, total, targetSeconds, maxStride: MAX_STRIDE });
+      }
+      return normalizeDepth(raw, range);
+    };
+
     // El primer fotograma tarda más (el dispositivo compila el modelo): se avisa antes de empezar
-    onProgress({ phase: 'frames', fraction: 0, frame: 0, total, profile: profile.name });
+    onProgress({ phase: 'frames', fraction: 0, frame: 0, total, stride, profile: profile.name });
 
     for (let i = 0; i < total; i++) {
       if (signal?.aborted) throw abortError();
       if (encoderError) throw encoderError;
 
-      const t = Math.min(start + i / fps, Math.max(start, end - 0.001));
-      await seek(video, t);
-      inCtx.drawImage(video, 0, 0, dW, dH);
-      const rgba = inCtx.getImageData(0, 0, dW, dH).data;
+      while (bIdx < i) {
+        A = B; aIdx = bIdx;
+        const next = bIdx < 0 ? 0 : Math.min(bIdx + stride, last);
+        B = await depthAt(next);
+        bIdx = next;
+      }
+      let norm = B;
+      if (A && bIdx > aIdx) {
+        const w = (i - aIdx) / (bIdx - aIdx);
+        for (let k = 0; k < blend.length; k++) blend[k] = A[k] + (B[k] - A[k]) * w;
+        norm = blend;
+      }
 
-      const raw = await model.estimate(rgba, dW, dH, signal);
-      paintDepth(normalizeDepth(raw, range), prev, gray.data);
+      paintDepth(norm, prev, gray.data);
       dCtx.putImageData(gray, 0, 0);
       outCtx.drawImage(dCanvas, 0, 0, outW, outH);
 
@@ -114,14 +147,14 @@ export async function convertToDepthStyle({ url, start, end, signal, onProgress 
       }
 
       const done = i + 1;
-      const elapsed = (performance.now() - t0) / 1000;
       onProgress({
         phase: 'frames',
         fraction: done / total,
         frame: done,
         total,
-        secondsPerFrame: elapsed / done,
-        etaSeconds: done >= 3 ? (elapsed / done) * (total - done) : undefined,
+        stride,
+        secondsPerFrame: secondsPerKey || undefined,     // por fotograma calculado
+        etaSeconds: estimates >= 3 ? Math.ceil((total - done) / stride) * secondsPerKey : undefined,
         profile: profile.name,
       });
     }
