@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#000000">
-  <title>Deep op</title>
+  <title>Deep Op</title>
 
   <!-- Instalación como app (PWA) -->
   <link rel="manifest" href="manifest.webmanifest">
@@ -13,7 +13,7 @@
   <link rel="apple-touch-icon" href="src/icons/app/apple-touch-icon.png">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Deep op">
+  <meta name="apple-mobile-web-app-title" content="Deep Op">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="src/styles/components/drawer.css">
   <link rel="stylesheet" href="src/styles/components/handle.css">
   <link rel="stylesheet" href="src/styles/components/dock.css">
+  <link rel="stylesheet" href="src/styles/components/home.css">
   <link rel="stylesheet" href="src/styles/components/intro.css">
   <!-- Fase 2: se puede quitar esta línea y la app sigue funcionando, solo que sin movimiento -->
   <link rel="stylesheet" href="src/styles/motion.css">
@@ -43,7 +44,7 @@
   <nav class="side collapsed" id="side" aria-label="Barra de iconos">
     <div class="brand">
       <svg class="logo" aria-hidden="true"><use href="src/icons/icons.svg#i-logo"/></svg>
-      <span class="name">Deep op</span>
+      <span class="name">Deep Op</span>
     </div>
 
     <div class="group">
@@ -68,11 +69,111 @@
   </nav>
 
   <!-- Panel interior de esquinas redondeadas -->
-  <main class="stage" aria-label="Deep op">
+  <main class="stage" aria-label="Deep Op">
+
+    <!-- Página principal: se desplaza por dentro del panel, por debajo del menú y del dock -->
+    <div class="home" id="home">
+      <h1 class="sr-only">Deep Op – Inicio</h1>
+
+      <div class="home-inner">
+
+        <!-- Carrusel principal -->
+        <section class="hero" aria-label="Novedades">
+          <video class="hero-media" autoplay muted loop playsinline preload="auto"
+                 poster="src/media/hero-poster.jpg" aria-hidden="true">
+            <source src="src/media/hero.webm" type="video/webm">
+            <source src="src/media/hero.mp4" type="video/mp4">
+          </video>
+          <div class="hero-shade" aria-hidden="true"></div>
+          <div class="hero-text">
+            <h2 class="hero-title">Deep Op · Actualización 1.0.1</h2>
+            <p>Convierte videos cortos al formato DepthStyle. Más de 100 overlays gratuitos para la comunidad. Exporta al instante a tu editor favorito. Deep Op: una plataforma creada para apoyar a la comunidad de editores · 2027</p>
+          </div>
+        </section>
+
+        <!-- Crear proyecto -->
+        <button type="button" class="create-btn" id="openProjectPanel" aria-controls="projectPanel">
+          <span class="create-btn-icon" aria-hidden="true"><svg class="ico"><use href="src/icons/icons.svg#i-plus"/></svg></span>
+          Crear nuevo proyecto
+        </button>
+
+        <section class="project" id="projectPanel" aria-labelledby="projectTitle" hidden>
+          <div class="project-head">
+            <h2 class="project-title" id="projectTitle" tabindex="-1">Nuevo proyecto</h2>
+            <span class="tag-demo">Demo</span>
+          </div>
+          <p class="project-note">Versión de demostración: puedes elegir un video y recortar el fragmento, pero todavía no se convierte a DepthStyle.</p>
+
+          <!-- Zona de carga -->
+          <label class="drop" id="uploadArea">
+            <input class="drop-input" type="file" id="videoInput" accept="video/mp4,video/quicktime,video/webm,video/*">
+            <svg class="ico drop-ico" aria-hidden="true"><use href="src/icons/icons.svg#i-upload"/></svg>
+            <span class="drop-title">Seleccionar video</span>
+            <span class="drop-hint">Arrastra un archivo aquí o elígelo desde tu dispositivo</span>
+            <span class="drop-formats">MP4, MOV o WebM</span>
+          </label>
+
+          <!-- Vista previa y recorte -->
+          <div class="preview" id="videoPreview" hidden>
+            <div class="preview-head">
+              <span class="file-name" id="videoName"></span>
+              <button type="button" class="link-btn" id="changeFileBtn">Cambiar archivo</button>
+            </div>
+
+            <video class="preview-video" id="previewVideo" controls playsinline preload="metadata"></video>
+
+            <p class="trim-hint">Elige el fragmento del video que quieres usar (máximo 60 segundos).</p>
+
+            <div class="timeline">
+              <div class="track" id="timelineTrack">
+                <div class="track-bg"><div class="range" id="timelineSelected"></div></div>
+                <div class="thumb" id="handleStart" role="slider" tabindex="0" aria-label="Inicio del fragmento"></div>
+                <div class="thumb" id="handleEnd" role="slider" tabindex="0" aria-label="Fin del fragmento"></div>
+              </div>
+              <div class="time-scale" aria-hidden="true">
+                <span>0:00</span>
+                <span id="totalDurationLabel">0:00</span>
+              </div>
+              <div class="time-row">
+                <span id="startTimeLabel">0:00</span>
+                <span id="selectedDurationLabel">Duración seleccionada: 0 s</span>
+                <span id="endTimeLabel">0:00</span>
+              </div>
+              <p class="warn" id="durationWarning" role="alert" hidden>El fragmento seleccionado supera el límite de 60 segundos.</p>
+            </div>
+          </div>
+
+          <p class="status" id="statusMessage" role="status" aria-live="polite"></p>
+
+          <div class="actions">
+            <button type="button" class="btn btn--secondary" id="cancelBtn">Cancelar</button>
+            <button type="button" class="btn btn--primary" id="processBtn" disabled>Procesar video</button>
+          </div>
+        </section>
+
+        <!-- Overlays: sube las imágenes a src/overlays/ (ver el README de esa carpeta) -->
+        <section class="overlays" aria-labelledby="overlaysTitle">
+          <h2 class="sr-only" id="overlaysTitle">Overlays</h2>
+          <ul class="overlay-list">
+            <li class="overlay"><img src="src/overlays/overlay-1.jpg" alt="" width="640" height="360" decoding="async"><span class="overlay-num"><span class="sr-only">Overlay </span>1</span></li>
+            <li class="overlay"><img src="src/overlays/overlay-2.jpg" alt="" width="640" height="360" decoding="async"><span class="overlay-num"><span class="sr-only">Overlay </span>2</span></li>
+            <li class="overlay"><img src="src/overlays/overlay-3.jpg" alt="" width="640" height="360" decoding="async"><span class="overlay-num"><span class="sr-only">Overlay </span>3</span></li>
+            <li class="overlay"><img src="src/overlays/overlay-4.jpg" alt="" width="640" height="360" decoding="async"><span class="overlay-num"><span class="sr-only">Overlay </span>4</span></li>
+            <li class="overlay"><img src="src/overlays/overlay-5.jpg" alt="" width="640" height="360" decoding="async"><span class="overlay-num"><span class="sr-only">Overlay </span>5</span></li>
+          </ul>
+        </section>
+
+        <div class="explore">
+          <button type="button" class="explore-btn" disabled aria-describedby="exploreNote">Explorar Overlays</button>
+          <p class="explore-note" id="exploreNote">Próximamente</p>
+        </div>
+
+      </div>
+    </div>
 
     <!-- Menú completo (cerrado por defecto: `inert` lo saca del orden de tabulación) -->
     <div class="drawer" id="drawer" aria-label="Menú principal" inert>
-      <div class="brand"><span class="name">Deep op</span></div>
+      <div class="brand"><span class="name">Deep Op</span></div>
 
       <div class="group">
         <div class="label">Menú</div>
@@ -111,8 +212,8 @@
 
 <!-- Pantalla de inicio: cubre la app hasta que termina la animación (ver src/scripts/intro.js).
      Los botones empiezan ocultos: intro.js los muestra solo si no hay sesión iniciada. -->
-<section class="intro" id="intro" aria-label="Deep op">
-  <h1 class="sr-only">Deep op</h1>
+<section class="intro" id="intro" aria-label="Deep Op">
+  <h1 class="sr-only">Deep Op</h1>
 
   <div class="intro-mesh" aria-hidden="true">
     <div class="intro-blob intro-blob--blue-a"></div>

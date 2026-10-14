@@ -1,5 +1,5 @@
 /**
- * sw.js — service worker de Deep op.
+ * sw.js — service worker de Deep Op.
  *
  * Qué hace:
  *  - Guarda una copia de la app al instalarse (precache), para que abra sin conexión.
@@ -14,7 +14,7 @@
  * Las rutas son relativas al propio sw.js, así funciona igual en /app/ que en la raíz del sitio.
  */
 
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = `deepop-${VERSION}`;
 const NETWORK_TIMEOUT_MS = 4000;
 
@@ -31,10 +31,12 @@ const PRECACHE = [
   'src/styles/components/drawer.css',
   'src/styles/components/handle.css',
   'src/styles/components/dock.css',
+  'src/styles/components/home.css',
   'src/styles/components/intro.css',
   'src/scripts/main.js',
   'src/scripts/menu.js',
   'src/scripts/nav.js',
+  'src/scripts/home.js',
   'src/scripts/intro.js',
   'src/scripts/session.js',
   'src/scripts/storage.js',
@@ -45,6 +47,7 @@ const PRECACHE = [
   'src/icons/app/icon-maskable-512.png',
   'src/icons/app/apple-touch-icon.png',
   'src/icons/app/favicon.svg',
+  'src/media/hero-poster.jpg',
 ];
 
 self.addEventListener('install', (event) => {
@@ -73,6 +76,10 @@ self.addEventListener('fetch', (event) => {
   // (sin conexión se usa la tipografía del sistema, como en el CSS: var(--font)).
   if (new URL(request.url).origin !== self.location.origin) return;
 
+  // El video del carrusel se pide por tramos (cabecera Range) y la caché no admite respuestas
+  // parciales: lo gestiona el navegador. Sin conexión se ve el póster (que sí está en PRECACHE).
+  if (request.headers.has('range')) return;
+
   event.respondWith(networkFirst(request));
 });
 
@@ -85,7 +92,7 @@ async function networkFirst(request) {
 
   const network = fetch(request).then((response) => {
     // Las respuestas con redirección no se guardan: el navegador las rechaza al reutilizarlas.
-    if (response.ok && !response.redirected) cache.put(request, response.clone());
+    if (response.status === 200 && !response.redirected) cache.put(request, response.clone()).catch(() => {});
     return response;
   });
   network.catch(() => {});   // evita "unhandled rejection" si pierde la carrera contra el timeout

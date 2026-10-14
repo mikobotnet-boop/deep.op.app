@@ -1,6 +1,6 @@
 # Reglas de animación
 
-Todo el movimiento de Deep op vive en `src/styles/motion.css`. Los tiempos y las curvas viven en `src/styles/tokens.css`. Estas reglas se aplican a cualquier animación nueva.
+Todo el movimiento de Deep Op vive en `src/styles/motion.css`. Los tiempos y las curvas viven en `src/styles/tokens.css`. Estas reglas se aplican a cualquier animación nueva.
 
 ## 1. Solo `transform` y `opacity`
 
@@ -19,6 +19,9 @@ Consecuencias ya aplicadas en el proyecto:
 - El tirador crece al pasar el ratón con `scaleY(1.3)`, no con `height`.
 - El dock se centra con `margin-inline: auto`, no con `transform`, para dejar `transform` libre.
 - El resplandor del botón crear es un `box-shadow` estático; se mueve el botón entero, no la sombra.
+
+- La página principal no anima `padding-left` para apartarse del menú: reserva el hueco y se desplaza con `translate` (ver `decisions.md`, D16). La barra de selección del recorte y la franja azul se mueven con `translate`/`scaleX`, no con `left`/`width`.
+- El carrusel es un video con el desenfoque ya incorporado; no se usa `backdrop-filter` ni `filter` sobre una animación.
 
 Se usan las propiedades individuales `translate`, `scale` y `rotate` en vez de `transform` cuando varios efectos conviven en el mismo elemento (por ejemplo, la cascada de entrada y el efecto de pulsar un ítem) para que no se pisen entre sí.
 
@@ -101,6 +104,7 @@ El fondo y el logotipo los anima `intro.js` fotograma a fotograma: las manchas s
 ## 8. Accesibilidad
 
 - **Todo el movimiento** (desplazamientos, escalas, rebotes, la animación de la intro) está dentro de `@media (prefers-reduced-motion: no-preference)`. Si se añade un movimiento nuevo, va dentro de ese bloque.
+- **El video del carrusel** se detiene con "reducir movimiento" (se ve el póster) y cuando no está a la vista.
 - **Con "reducir movimiento" activado** solo hay fundidos cortos (`--dur-fade`, `--dur-fast`) en un bloque `@media (prefers-reduced-motion: reduce)` al final de `motion.css`: la pantalla de inicio se disuelve en lugar de desaparecer de golpe y el ítem activo cambia de color con un fundido. Un cambio de opacidad o de color no es movimiento. Lo que **no** debe haber ahí: `translate`, `scale`, `rotate` ni animaciones continuas. Con movimiento reducido el logotipo aparece ya completo y el fondo queda fijo.
 - Los efectos de elevación al pasar el ratón van dentro de `@media (hover: hover)` para que en pantallas táctiles no se queden "pegados" tras tocar.
 - El drawer cerrado está fuera de la tabulación: `inert` (inmediato) y `visibility: hidden` (al terminar la salida).

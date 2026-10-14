@@ -201,8 +201,46 @@
   .intro-btn:not(:disabled):active { scale: .975; }
 
   /* ------------------------------------------------------------------------
+     Página principal: el contenido se desplaza con el menú (solo escritorio).
+     Mismos tiempos y curvas que el drawer; solo `translate`, sin tocar el layout.
+     ------------------------------------------------------------------------ */
+  @media (min-width: 761px) {
+    .home-inner { transition: translate var(--dur-menu-close) var(--ease-in-out); }
+    .app.open .home-inner { transition: translate var(--dur-menu-open) var(--ease-out); }
+  }
+
+  /* ------------------------------------------------------------------------
+     Página principal: botones y zonas pulsables (color, borde, elevación, pulsación)
+     ------------------------------------------------------------------------ */
+  .create-btn,
+  .explore-btn,
+  .btn,
+  .link-btn,
+  .drop {
+    transition:
+      background-color var(--dur-fast) var(--ease-standard),
+      border-color var(--dur-fast) var(--ease-standard),
+      color var(--dur-fast) var(--ease-standard),
+      translate var(--dur-fast) var(--ease-out),
+      scale var(--dur-instant) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .create-btn:hover,
+    .explore-btn:not(:disabled):hover { translate: 0 -1px; }
+  }
+  .create-btn:active,
+  .explore-btn:not(:disabled):active,
+  .btn:not(:disabled):active { scale: .98; }
+
+  /* El panel de proyecto se despliega con un fundido y un leve ascenso */
+  html:not(.preload) .home-inner > .project { animation: panel-in var(--dur-base) var(--ease-out) backwards; }
+
+  /* ------------------------------------------------------------------------
      Entrada inicial (empieza cuando se retira .preload)
      ------------------------------------------------------------------------ */
+  html:not(.preload) .home-inner > :not(.project) {
+    animation: rise var(--dur-intro) var(--ease-out) calc(var(--i, 0) * var(--stagger) * 2 + 80ms) backwards;
+  }
   html:not(.preload) .dock {
     animation: rise var(--dur-intro) var(--ease-out) 160ms backwards;
   }
@@ -227,6 +265,19 @@
   }
   .intro-home,
   .intro-login { animation: fade-in var(--dur-fade) var(--ease-standard) backwards; }
+
+  /* Página principal: el panel de proyecto se funde, y los botones cambian de color con fundido */
+  .project { animation: fade-in var(--dur-fade) var(--ease-standard) backwards; }
+  .create-btn,
+  .explore-btn,
+  .btn,
+  .link-btn,
+  .drop {
+    transition:
+      background-color var(--dur-fast) var(--ease-standard),
+      border-color var(--dur-fast) var(--ease-standard),
+      color var(--dur-fast) var(--ease-standard);
+  }
 
   /* Ítem activo: el fondo y el color cambian con un fundido corto */
   .item {

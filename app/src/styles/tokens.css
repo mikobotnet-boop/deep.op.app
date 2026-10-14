@@ -37,6 +37,13 @@
   --handle: #4a4c52;
   --handle-hover: #fff;
 
+  /* ---------- Color: página principal (home) ---------- */
+  --accent-solid: #6a4bf0;        /* fondo de botones primarios: texto blanco con contraste ≥ 4,5 */
+  --accent-solid-hover: #7c5cff;
+  --border-strong: #3a3c42;       /* bordes discontinuos de las zonas de carga */
+  --hero-shade: linear-gradient(to top, rgba(0, 0, 0, .72) 0%, rgba(0, 0, 0, .4) 50%, transparent 100%);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, .35);
+
   /* ---------- Pantalla de inicio (intro) ---------- */
   --intro-ink: #fff;
   --intro-navy: #04060d;
@@ -52,7 +59,8 @@
 
   /* ---------- Tipografía ---------- */
   --font: "Outfit", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-intro: "Lora", Georgia, serif;
+  --font-serif: "Lora", Georgia, serif;   /* logotipo de la pantalla de inicio y texto del carrusel */
+  --font-intro: var(--font-serif);
 
   /* ---------- Medidas ---------- */
   --rail: 64px;                /* ancho de la barra de iconos */
@@ -71,8 +79,10 @@
   --dock-h: 54px;
   --dock-w: 516px;
   --dock-bottom: 22px;
+  --home-max: 1100px;          /* ancho máximo del contenido de la página principal */
 
   --radius-panel: 26px;
+  --radius-card: 18px;
   --radius-drawer: 24px;
   --radius-item: 14px;
 

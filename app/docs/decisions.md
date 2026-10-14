@@ -115,8 +115,41 @@ Registro breve de las decisiones tomadas al separar el HTML original (un solo ar
 
 **Todavía no navega.** Cambia qué ítem se ve como activo, pero no hay pantallas detrás; eso queda para cuando la navegación sea real.
 
+## D16. Página principal en el panel, con el hueco del menú reservado
+
+**Decisión.** El contenido (`.home`) es una capa que se desplaza por dentro del panel, por debajo del drawer, del tirador y del dock. En escritorio, donde el menú empieza abierto, el hueco que ocupa (`--drawer-w` + tirador) está **reservado siempre en el padding**; con el menú cerrado el contenido se desplaza media anchura del menú con `translate` para quedar centrado. En móvil el menú se superpone.
+
+**Motivo.** Con el menú abierto en escritorio, un contenido a pantalla completa queda tapado por el menú (se comprobó: los tiradores del recorte caían debajo). La salida obvia —animar `padding-left`— obliga al navegador a recalcular el layout (y a redimensionar el video) en cada fotograma, lo que va contra la regla de «solo transform y opacity». Reservando el hueco, el contenido **nunca cambia de tamaño** y solo se mueve con `translate`, con los mismos tiempos y curva que el drawer.
+
+**Consecuencia.** Con el menú cerrado el contenido es algo más estrecho de lo que podría ser (el ancho es siempre el del caso «menú abierto»). Es el precio de no animar el layout.
+
+## D17. Carrusel como video, sin filtros en vivo
+
+**Decisión.** El GIF original (5,9 MB, desenfoque `backdrop-filter` y velo claro encima) se convirtió con `ffmpeg` a `hero.webm` (74 KB) y `hero.mp4` (124 KB), con el desenfoque y el velo ya aplicados, más un póster `hero-poster.jpg`. Sin sonido, en bucle, `playsinline`.
+
+**Motivo.** Un GIF de 5,9 MB es mucho para un móvil y no se puede pausar. Un `backdrop-filter` sobre una animación obliga a recalcular el desenfoque en cada fotograma, que es justo lo que los 60 FPS no perdonan. Incorporar el efecto al video da el mismo aspecto sin ese coste.
+
+**Detalles.**
+- WebM primero (más ligero), MP4 de respaldo (Safari). Solo el póster está en `PRECACHE`; sin conexión se ve el póster.
+- `sw.js` no intercepta las peticiones con cabecera `Range` (el navegador pide los videos por tramos y la caché no admite respuestas parciales) y solo guarda respuestas completas (`status === 200`).
+- `home.js` detiene el video con «reducir movimiento» y cuando sale de pantalla.
+
+## D18. Recorte de video y «Procesar» honesto
+
+**Decisión.** El recorte de hasta 60 s es real (selección, vista previa solo del fragmento, validación del límite), pero **no se recorta ni se convierte ningún archivo**: no hay servidor. «Procesar video» confirma el fragmento y avisa de que la conversión a DepthStyle aún no existe. El panel lleva la etiqueta *Demo*.
+
+**Motivo.** La versión inicial simulaba un progreso aleatorio y terminaba diciendo «procesado correctamente» sin haber hecho nada. Prometer algo que no ocurre es peor que un botón que avise.
+
+**Detalles.** Los tiradores son `role="slider"` con teclado y zona táctil de 44 px, y se mueven con `transform` (el ancho de la barra se mide con `ResizeObserver`). Si el video no se puede leer (por ejemplo, un MOV en HEVC) se muestra un error y se vuelve a la zona de carga. La URL del video se libera al cambiar de archivo o cancelar.
+
+## D19. Nombre: «Deep Op»
+
+**Decisión.** El nombre se escribe «Deep Op» en toda la app, el manifiesto y la documentación. Los identificadores técnicos (`deepop-menu`, `deepop-session`, el nombre de la caché del service worker y el repositorio `deep.op.app`) no cambian, para no borrar preferencias ni sesiones existentes.
+
 ## Pendiente / deuda conocida
 
 - **Menú duplicado en el HTML.** La barra de iconos y el drawer repiten la misma lista de ítems (como en el original). Cuando la navegación sea real, conviene generarla desde un único arreglo de datos.
+- **Overlays.** Las 5 casillas esperan las imágenes que subirá el propietario del proyecto a `src/overlays/`. «Explorar Overlays» no hace nada todavía.
+- **Conversión a DepthStyle.** Requiere un servidor; hasta entonces «Procesar video» solo confirma el fragmento.
 - **Sesión sin servidor.** `session.js` es local y no hay forma de cerrar sesión desde la interfaz (existe `signOut()`, falta el botón).
 - **Submenú "Actividad".** Tiene `aria-expanded="true"` y un chevron, pero no se pliega. Sin cambios respecto al original.

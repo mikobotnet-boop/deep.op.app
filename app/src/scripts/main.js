@@ -4,6 +4,7 @@
 
 import { initMenu } from './menu.js';
 import { initNav } from './nav.js';
+import { initHome } from './home.js';
 import { initIntro } from './intro.js';
 import { registerServiceWorker } from './pwa.js';
 
@@ -21,6 +22,13 @@ initMenu({
 });
 
 initNav({ app });
+
+// La página principal no es imprescindible para arrancar: si fallara, la app sigue funcionando.
+try {
+  initHome({ app });
+} catch (err) {
+  console.warn('[home] no se pudo iniciar:', err);
+}
 
 /*
  * Arranque. `preload` (en <html>) oculta la app y desactiva sus transiciones mientras se

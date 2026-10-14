@@ -1,6 +1,6 @@
-# Deep op
+# Deep Op
 
-Interfaz de navegación de Deep op: pantalla de inicio animada, barra de iconos (*rail*), menú completo (*drawer*), tirador (*handle*) y barra inferior (*dock*). HTML, CSS y JavaScript puros, sin dependencias ni paso de compilación, con animaciones pensadas para 60 FPS.
+Interfaz de navegación de Deep Op: pantalla de inicio animada, barra de iconos (*rail*), menú completo (*drawer*), tirador (*handle*) y barra inferior (*dock*). HTML, CSS y JavaScript puros, sin dependencias ni paso de compilación, con animaciones pensadas para 60 FPS.
 
 ## Ejecutar en local
 
@@ -35,15 +35,19 @@ app/
 │  │     ├─ drawer.css     menú completo
 │  │     ├─ handle.css     tirador que abre/cierra el menú
 │  │     ├─ dock.css       barra inferior
+│  │     ├─ home.css       página principal (carrusel, crear proyecto, recorte, overlays)
 │  │     └─ intro.css      pantalla de inicio (logotipo, botones, formulario)
 │  ├─ scripts/
 │  │  ├─ main.js           punto de entrada
 │  │  ├─ menu.js           abrir / cerrar
 │  │  ├─ nav.js            ítem activo en el menú y en la barra inferior
+│  │  ├─ home.js           página principal: carrusel, recorte de video, overlays
 │  │  ├─ intro.js          pantalla de inicio: animación, Continuar / Iniciar sesión, salida
 │  │  ├─ session.js        sesión del usuario (local por ahora)
 │  │  ├─ storage.js        localStorage seguro
 │  │  └─ pwa.js            registro del service worker
+│  ├─ media/               video del carrusel (webm + mp4) y su póster
+│  ├─ overlays/            aquí se suben las imágenes de overlays (ver su README)
 │  └─ icons/
 │     ├─ icons.svg         todos los iconos de la interfaz en un solo archivo
 │     └─ app/              iconos de la app instalada (192, 512, maskable, apple-touch, favicon)
@@ -70,6 +74,15 @@ El orden de las hojas de estilo en `index.html` importa: de lo más global (`tok
 - En pantallas pequeñas el menú arranca cerrado y `Escape` lo cierra.
 - El foco siempre es visible con el teclado.
 
+## Página principal
+
+Es lo primero que se ve al entrar (`home.js` + `home.css`, dentro del panel):
+
+- **Carrusel.** Un video corto sin sonido y en bucle (`src/media/`), con el texto de novedades. En pantallas estrechas el texto va debajo del video para no taparlo. Se detiene con «reducir movimiento» (se ve el póster) y cuando no está a la vista. El desenfoque y el velo claro están incorporados en el propio video, así que no hay ningún filtro en vivo: es lo que mantiene los 60 FPS.
+- **Crear nuevo proyecto** (también con el botón **+** de la barra inferior). Elige un video (tocando, con teclado o arrastrándolo), recorta un fragmento de hasta 60 s con dos tiradores (dedo, ratón o teclado: flechas ±1 s, Mayús ±5 s, RePág/AvPág ±10 s, Inicio/Fin) y la vista previa solo reproduce ese fragmento.
+- **«Procesar video» todavía no convierte nada.** Deep Op aún no tiene servidor donde convertir a DepthStyle. El panel lleva la etiqueta *Demo* y, al pulsar el botón, confirma el fragmento y dice claramente que la conversión llegará con el servidor. No hay barra de progreso ni mensaje de éxito falso. Cuando exista el servidor, `processSelection` en `home.js` es lo único que se sustituye.
+- **Overlays.** La fila de 5 casillas espera las imágenes: súbelas a `src/overlays/` con los nombres `overlay-1.jpg` … `overlay-5.jpg` (ver el README de esa carpeta). Mientras no estén, cada casilla muestra su número. «Explorar Overlays» está desactivado con la nota *Próximamente*.
+
 ## Pantalla de inicio y sesión
 
 Al abrir la app se ve primero la pantalla de inicio (`intro.js` + `intro.css`): el logotipo se forma, la bolita se retira y aparece el nombre sobre un fondo de manchas azul y negro.
@@ -79,7 +92,7 @@ Al abrir la app se ve primero la pantalla de inicio (`intro.js` + `intro.css`): 
 - **Salida sin corte:** la interfaz empieza a entrar (dock que sube, iconos en cascada) mientras la pantalla de inicio se disuelve; nunca hay un cambio brusco entre las dos.
 - Si la intro fallara por cualquier motivo, la app se muestra igualmente (red de seguridad en `main.js` y `layout.css`).
 
-**La sesión es local por ahora.** Deep op aún no tiene servidor: `session.js` solo comprueba que el correo tenga forma de correo y lo guarda en el dispositivo. No hay contraseña y no protege nada. Cuando exista un servidor, `signIn` en `session.js` es el único punto que cambia. `session.signOut()` ya existe, pero todavía no hay botón que lo use.
+**La sesión es local por ahora.** Deep Op aún no tiene servidor: `session.js` solo comprueba que el correo tenga forma de correo y lo guarda en el dispositivo. No hay contraseña y no protege nada. Cuando exista un servidor, `signIn` en `session.js` es el único punto que cambia. `session.signOut()` ya existe, pero todavía no hay botón que lo use.
 
 ## Preferencias guardadas
 
@@ -87,7 +100,7 @@ El estado abierto/cerrado del menú se guarda en `localStorage` (clave `deepop-m
 
 ## Instalar como app (PWA)
 
-Deep op se puede instalar en el móvil o el escritorio y abre sin conexión. Requiere abrirla por **https** (GitHub Pages ya lo es) o `localhost`.
+Deep Op se puede instalar en el móvil o el escritorio y abre sin conexión. Requiere abrirla por **https** (GitHub Pages ya lo es) o `localhost`.
 
 - **Android (Chrome):** abre la dirección → menú ⋮ → **Instalar aplicación** (o *Añadir a la pantalla de inicio*). Si no aparece, recarga la página una vez y vuelve a abrir el menú.
 - **iPhone (Safari):** botón Compartir → **Añadir a pantalla de inicio**.

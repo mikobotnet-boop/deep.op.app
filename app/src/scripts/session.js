@@ -1,7 +1,7 @@
 /**
  * session.js — sesión del usuario.
  *
- * IMPORTANTE: por ahora la sesión es LOCAL. Deep op todavía no tiene servidor, así que
+ * IMPORTANTE: por ahora la sesión es LOCAL. Deep Op todavía no tiene servidor, así que
  * `signIn` solo comprueba que el correo tenga forma de correo y guarda en el dispositivo
  * quién es. No hay contraseña ni verificación: no protege nada.
  *

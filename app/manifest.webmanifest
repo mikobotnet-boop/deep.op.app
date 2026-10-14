@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Deep op",
-  "short_name": "Deep op",
-  "description": "Interfaz de navegación de Deep op",
+  "name": "Deep Op",
+  "short_name": "Deep Op",
+  "description": "Interfaz de navegación de Deep Op",
   "lang": "es",
   "dir": "ltr",
   "start_url": "./",

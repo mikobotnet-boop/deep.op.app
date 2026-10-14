@@ -1,6 +1,6 @@
-# Deep op
+# Deep Op
 
-Interfaz de navegación de Deep op: barra de iconos, menú desplegable, tirador y barra inferior. HTML, CSS y JavaScript puros, sin dependencias, con animaciones pensadas para 60 FPS. Se puede instalar como app y abre sin conexión.
+Interfaz de navegación de Deep Op: barra de iconos, menú desplegable, tirador y barra inferior. HTML, CSS y JavaScript puros, sin dependencias, con animaciones pensadas para 60 FPS. Se puede instalar como app y abre sin conexión.
 
 ## Ver la app
 
