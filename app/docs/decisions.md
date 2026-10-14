@@ -134,13 +134,13 @@ Registro breve de las decisiones tomadas al separar el HTML original (un solo ar
 - `sw.js` no intercepta las peticiones con cabecera `Range` (el navegador pide los videos por tramos y la caché no admite respuestas parciales) y solo guarda respuestas completas (`status === 200`).
 - `home.js` detiene el video con «reducir movimiento» y cuando sale de pantalla.
 
-## D18. Recorte de video y «Procesar» honesto
+## D18. Recorte de video y conversión a DepthStyle en el dispositivo
 
-**Decisión.** El recorte de hasta 60 s es real (selección, vista previa solo del fragmento, validación del límite), pero **no se recorta ni se convierte ningún archivo**: no hay servidor. «Procesar video» confirma el fragmento y avisa de que la conversión a DepthStyle aún no existe. El panel lleva la etiqueta *Demo*.
+**Decisión.** El recorte de hasta 60 s es real (selección, vista previa solo del fragmento, validación del límite). «Procesar video» convierte el fragmento a DepthStyle **en el propio dispositivo** (`depthstyle.js`): estimación de profundidad con Depth Anything V2 small, aspecto gris con niebla, MP4 con WebCodecs. No hay servidor, así que el video no sale del teléfono.
 
-**Motivo.** La versión inicial simulaba un progreso aleatorio y terminaba diciendo «procesado correctamente» sin haber hecho nada. Prometer algo que no ocurre es peor que un botón que avise.
+**Motivo.** Encaja con GitHub Pages y la PWA, sin costes ni backend. La versión inicial simulaba un progreso falso; ahora el progreso es el real (fotogramas convertidos) y los fallos se muestran tal cual.
 
-**Detalles.** Los tiradores son `role="slider"` con teclado y zona táctil de 44 px, y se mueven con `transform` (el ancho de la barra se mide con `ResizeObserver`). Si el video no se puede leer (por ejemplo, un MOV en HEVC) se muestra un error y se vuelve a la zona de carga. La URL del video se libera al cambiar de archivo o cancelar.
+**Detalles.** Las librerías y el modelo se cargan solo al pulsar «Procesar» (`import()` dinámico), así que no pesan al abrir la app. Sin WebGPU se usa WASM (12 fps y menor resolución). El mapa se suaviza en el tiempo (`TEMPORAL_MIX`) y el rango min/máx se adapta despacio (`RANGE_MIX`) para evitar parpadeo; ambos y el aspecto (`DEPTH_GAMMA`, `FOG_FLOOR`) están en la cabecera de `depthstyle.js`. Los tiradores del recorte son `role="slider"` con teclado y zona táctil de 44 px. La URL del video y la del resultado se liberan al cambiar de archivo o cancelar. jsDelivr es otro dominio, así que el service worker no lo guarda: lo cachea el navegador.
 
 ## D19. Nombre: «Deep Op»
 
@@ -150,6 +150,6 @@ Registro breve de las decisiones tomadas al separar el HTML original (un solo ar
 
 - **Menú duplicado en el HTML.** La barra de iconos y el drawer repiten la misma lista de ítems (como en el original). Cuando la navegación sea real, conviene generarla desde un único arreglo de datos.
 - **Overlays.** Las 5 casillas esperan las imágenes que subirá el propietario del proyecto a `src/overlays/`. «Explorar Overlays» no hace nada todavía.
-- **Conversión a DepthStyle.** Requiere un servidor; hasta entonces «Procesar video» solo confirma el fragmento.
+- **Conversión a DepthStyle.** Falta probarla con el modelo real en un teléfono Android (en el entorno de desarrollo no hay acceso a jsDelivr ni a Hugging Face), ajustar el aspecto a la referencia, añadir overlays encima y el audio original.
 - **Sesión sin servidor.** `session.js` es local y no hay forma de cerrar sesión desde la interfaz (existe `signOut()`, falta el botón).
 - **Submenú "Actividad".** Tiene `aria-expanded="true"` y un chevron, pero no se pliega. Sin cambios respecto al original.

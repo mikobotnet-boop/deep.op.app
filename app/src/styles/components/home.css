@@ -137,15 +137,6 @@
 .project-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .project-title { margin: 0; font-size: 20px; font-weight: 500; }
 .project-title:focus { outline: none; }          /* solo recibe foco por código, al abrir el panel */
-.tag-demo {
-  padding: 2px 9px;
-  border: 1px solid var(--violet-soft);
-  border-radius: 999px;
-  color: var(--violet-soft);
-  font-size: 12px;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-}
 .project-note { margin: 0 0 18px; color: var(--muted); font-size: 14px; line-height: 1.45; }
 
 /* Zona de carga: el <input> es real (accesible con teclado) pero invisible */
@@ -268,6 +259,13 @@
 .status.is-error { color: var(--red); }
 
 /* Botones */
+/* Progreso y resultado de la conversión (solo transform y opacity se animan) */
+.progress { margin: 0 0 14px; }
+.progress-bar { height: 6px; border-radius: 3px; background: var(--active); overflow: hidden; }
+.progress-fill { display: block; height: 100%; background: var(--accent-solid); transform: scaleX(0); transform-origin: left; }
+.result { display: grid; gap: 12px; margin: 0 0 14px; }
+.result .btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+
 .actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
 .btn {
   min-height: 44px;

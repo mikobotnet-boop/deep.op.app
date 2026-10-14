@@ -100,9 +100,8 @@
         <section class="project" id="projectPanel" aria-labelledby="projectTitle" hidden>
           <div class="project-head">
             <h2 class="project-title" id="projectTitle" tabindex="-1">Nuevo proyecto</h2>
-            <span class="tag-demo">Demo</span>
           </div>
-          <p class="project-note">Versión de demostración: puedes elegir un video y recortar el fragmento, pero todavía no se convierte a DepthStyle.</p>
+          <p class="project-note">Elige un video, recorta un fragmento de hasta 60 s y conviértelo a DepthStyle. Todo ocurre en tu dispositivo: el video no se sube a ningún servidor.</p>
 
           <!-- Zona de carga -->
           <label class="drop" id="uploadArea">
@@ -144,6 +143,16 @@
           </div>
 
           <p class="status" id="statusMessage" role="status" aria-live="polite"></p>
+
+          <div class="progress" id="progressWrap" hidden>
+            <div class="progress-bar" id="progressBar" role="progressbar" aria-label="Progreso de la conversión" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="progress-fill" id="progressFill"></span></div>
+          </div>
+
+          <!-- Resultado de la conversión -->
+          <div class="result" id="resultBox" hidden>
+            <video class="preview-video" id="resultVideo" controls playsinline loop></video>
+            <a class="btn btn--primary" id="downloadLink" download="deepop-depthstyle.mp4">Descargar MP4</a>
+          </div>
 
           <div class="actions">
             <button type="button" class="btn btn--secondary" id="cancelBtn">Cancelar</button>

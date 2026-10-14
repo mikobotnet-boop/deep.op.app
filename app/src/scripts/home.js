@@ -6,10 +6,8 @@
  *  - Proyecto: elegir un video (clic, teclado o arrastrar), recortar un fragmento de hasta
  *    60 s con dos tiradores (ratón, dedo o teclado) y ver la vista previa solo de ese fragmento.
  *
- * «Procesar video» todavía NO convierte nada: Deep Op aún no tiene servidor donde convertir a
- * DepthStyle. Al pulsarlo se confirma el fragmento elegido y se avisa con claridad, sin barras de
- * progreso ni mensajes de éxito falsos. Cuando exista el servidor, `processSelection` es lo único
- * que se sustituye.
+ * «Procesar video» convierte el fragmento a DepthStyle en el propio dispositivo (depthstyle.js): barra
+ * de progreso, cancelación, vista previa del resultado y descarga del MP4.
  */
 
 /* =========================================================
@@ -105,9 +103,16 @@ export function initHome({ app }) {
   const warn = $('durationWarning');
   const processBtn = $('processBtn');
   const cancelBtn = $('cancelBtn');
+  const progressWrap = $('progressWrap');
+  const progressBar = $('progressBar');
+  const progressFill = $('progressFill');
+  const resultBox = $('resultBox');
+  const resultVideo = $('resultVideo');
+  const downloadLink = $('downloadLink');
 
   const state = { ready: false, duration: 0, start: 0, end: 0, url: null, trackW: 0 };
-  let noticeShown = false;              // el aviso «aún no se convierte» está en pantalla
+  let job = null;                       // conversión en curso: { controller }
+  let resultUrl = null;                 // object URL del MP4 convertido
 
   function setStatus(text, kind = '') {
     status.textContent = text;
@@ -126,6 +131,9 @@ export function initHome({ app }) {
   }
 
   function close() {
+    job?.controller.abort();
+    clearResult();
+    showProgress(null);
     releaseVideo();
     state.ready = false;
     input.value = '';
@@ -140,7 +148,8 @@ export function initHome({ app }) {
   }
 
   openBtn.addEventListener('click', open);
-  cancelBtn.addEventListener('click', close);
+  // Mientras se convierte, «Cancelar» detiene la conversión en vez de cerrar el panel
+  cancelBtn.addEventListener('click', () => { if (job) job.controller.abort(); else close(); });
   // El botón «+» del dock crea un proyecto
   app.querySelector('.dock .add')?.addEventListener('click', open);
 
@@ -184,7 +193,7 @@ export function initHome({ app }) {
   }
 
   function loadVideo(file) {
-    noticeShown = false;
+    clearResult();
     releaseVideo();
     state.ready = false;
     processBtn.disabled = true;
@@ -224,7 +233,6 @@ export function initHome({ app }) {
     totalLabel.textContent = formatTime(duration);
     drop.hidden = true;
     preview.hidden = false;
-    noticeShown = false;
     measure();                            // el recorte acaba de aparecer: ahora se puede medir
     render();
     setStatus('Video cargado. Ajusta el fragmento que quieres usar (máximo 60 s).', 'ok');
@@ -266,17 +274,14 @@ export function initHome({ app }) {
 
     const tooLong = length > MAX_SECONDS + 1e-6;
     warn.hidden = !tooLong;
-    processBtn.disabled = tooLong;
+    processBtn.disabled = tooLong || !!job;
   }
 
   function moveTo(thumb, t) {
     if (!state.ready) return;
     if (thumb === thumbStart) state.start = clamp(t, 0, state.end - minGap());
     else state.end = clamp(t, state.start + minGap(), state.duration);
-    if (noticeShown) {
-      noticeShown = false;
-      setStatus('Ajusta el fragmento que quieres usar (máximo 60 s).', 'ok');
-    }
+    if (resultUrl) clearResult();
     render();
     requestSeek(thumb === thumbStart ? state.start : Math.max(state.start, state.end - 0.1));
   }
@@ -356,16 +361,82 @@ export function initHome({ app }) {
   });
   video.addEventListener('pause', () => cancelAnimationFrame(watchRaf));
 
-  /* ----- Procesar -----
-     Todavía no hay conversión: se confirma el fragmento y se dice claramente que aún no existe. */
-  function processSelection() {
+  /* ----- Procesar: conversión a DepthStyle en el dispositivo ----- */
+  function showProgress(fraction) {
+    progressWrap.hidden = fraction === null;
+    if (fraction === null) return;
+    const pct = Math.round(clamp(fraction, 0, 1) * 100);
+    progressFill.style.transform = `scaleX(${pct / 100})`;
+    progressBar.setAttribute('aria-valuenow', String(pct));
+  }
+
+  function clearResult() {
+    resultBox.hidden = true;
+    resultVideo.pause();
+    resultVideo.removeAttribute('src');
+    resultVideo.load();
+    downloadLink.removeAttribute('href');
+    if (resultUrl) { URL.revokeObjectURL(resultUrl); resultUrl = null; }
+  }
+
+  const formatEta = (s) => (s < 60 ? `${Math.max(1, Math.round(s))} s` : `${Math.ceil(s / 60)} min`);
+
+  function setBusy(busy) {
+    processBtn.disabled = busy || (state.end - state.start) > MAX_SECONDS + 1e-6;
+    cancelBtn.textContent = busy ? 'Cancelar conversión' : 'Cancelar';
+    changeBtn.disabled = busy;
+  }
+
+  async function processSelection() {
     const seconds = state.end - state.start;
-    if (!state.ready || seconds > MAX_SECONDS + 1e-6) return;
-    noticeShown = true;
-    setStatus(
-      `Fragmento de ${Math.round(seconds)} s (${formatTime(state.start)} – ${formatTime(state.end)}) listo. ` +
-      'La conversión a DepthStyle todavía no está disponible: llegará con el servidor.',
-      'ok');
+    if (job || !state.ready || seconds > MAX_SECONDS + 1e-6) return;
+
+    video.pause();
+    clearResult();
+    const controller = new AbortController();
+    job = { controller };
+    setBusy(true);
+    showProgress(0);
+    setStatus('Preparando la conversión…', 'busy');
+
+    try {
+      const { convertToDepthStyle } = await import('./depthstyle.js');
+
+      const blob = await convertToDepthStyle({
+        url: state.url,
+        start: state.start,
+        end: state.end,
+        signal: controller.signal,
+        onProgress: ({ phase, fraction, etaSeconds, profile }) => {
+          if (phase === 'model') {
+            showProgress(fraction);
+            setStatus(`Descargando el modelo de profundidad (solo la primera vez)… ${Math.round(fraction * 100)} %`, 'busy');
+          } else if (phase === 'frames') {
+            showProgress(fraction);
+            const eta = etaSeconds !== undefined ? ` · quedan ≈ ${formatEta(etaSeconds)}` : '';
+            const mode = profile === 'cpu' ? ' (sin GPU: será más lento)' : '';
+            setStatus(`Convirtiendo a DepthStyle… ${Math.round(fraction * 100)} %${eta}${mode}`, 'busy');
+          } else {
+            showProgress(1);
+            setStatus('Guardando el video…', 'busy');
+          }
+        },
+      });
+
+      resultUrl = URL.createObjectURL(blob);
+      resultVideo.src = resultUrl;
+      downloadLink.href = resultUrl;
+      resultBox.hidden = false;
+      showProgress(null);
+      setStatus(`Listo: DepthStyle de ${Math.round(seconds)} s (sin sonido).`, 'ok');
+    } catch (err) {
+      showProgress(null);
+      if (err?.name === 'AbortError') setStatus('Conversión cancelada.', 'ok');
+      else setStatus(`No se pudo convertir: ${err?.message || 'error desconocido'}`, 'error');
+    } finally {
+      job = null;
+      setBusy(false);
+    }
   }
 
   processBtn.addEventListener('click', processSelection);
