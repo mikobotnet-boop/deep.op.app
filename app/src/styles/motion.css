@@ -220,6 +220,7 @@
   .link-btn,
   .chip,
   .icon-btn,
+  .pager-btn,
   .drop {
     transition:
       background-color var(--dur-fast) var(--ease-standard),
@@ -237,6 +238,7 @@
   .btn:not(:disabled):active { scale: .98; }
   .chip:active,
   .icon-btn:active { scale: .96; }
+  .pager-btn:not(:disabled):active { scale: .98; }
 
   /* ------------------------------------------------------------------------
      Catálogo de overlays: tarjetas y hoja de detalle
@@ -302,6 +304,7 @@
   .link-btn,
   .chip,
   .icon-btn,
+  .pager-btn,
   .drop {
     transition:
       background-color var(--dur-fast) var(--ease-standard),

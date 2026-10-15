@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "base": "",
+  "base": "https://miko-net.s3.filebase.io/",
   "items": [
-    { "name": "Niebla suave",    "category": "Humo",   "duration": 5, "new": true },
-    { "name": "Chispas rojas",   "category": "Fuego",  "duration": 4 },
-    { "name": "Glitch neón",     "category": "Glitch", "duration": 6 },
-    { "name": "Destellos",       "category": "Luces",  "duration": 5 },
-    { "name": "Ojos brillantes", "category": "Luces",  "duration": 3 },
-    { "name": "Viento polvo",    "category": "Humo",   "duration": 7 },
-    { "name": "Rayos de luz",    "category": "Luces",  "duration": 5 },
-    { "name": "Ruido VHS",       "category": "Glitch", "duration": 4 }
+    { "name": "Overlay 001", "category": "Prueba", "video": "Deep.op001.mp4" },
+    { "name": "Overlay 002", "category": "Prueba", "video": "Deep.op002.mp4" },
+    { "name": "Overlay 003", "category": "Prueba", "video": "Deep.op003.mp4" },
+    { "name": "Overlay 004", "category": "Prueba", "video": "Deep.op004.mp4" },
+    { "name": "Overlay 005", "category": "Prueba", "video": "Deep.op005.mp4" },
+    { "name": "Overlay 006", "category": "Prueba", "video": "Deep.op006.mp4" },
+    { "name": "Overlay 007", "category": "Prueba", "video": "Deep.op007.mp4" },
+    { "name": "Overlay 008", "category": "Prueba", "video": "Deep.op008.mp4" }
   ]
 }

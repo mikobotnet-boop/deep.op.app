@@ -207,7 +207,15 @@
           <p>No se pudo cargar el catálogo. Revisa tu conexión e inténtalo de nuevo.</p>
           <button type="button" class="btn btn--secondary" id="catalogRetry">Reintentar</button>
         </div>
-        <div class="catalog-sentinel" id="catalogSentinel" aria-hidden="true"></div>
+
+        <!-- Paginador: abajo a la izquierda, al final de la lista. Se oculta si solo hay una página. -->
+        <nav class="pager" id="catalogPager" aria-label="Páginas del catálogo" hidden>
+          <p class="pager-info" id="pagerInfo" role="status" aria-live="polite">Página 1 de 1</p>
+          <div class="pager-nav">
+            <button type="button" class="pager-btn" id="pagerPrev"><svg class="ico" aria-hidden="true"><use href="src/icons/icons.svg#i-chevron-left"/></svg>Anterior</button>
+            <button type="button" class="pager-btn" id="pagerNext">Siguiente<svg class="ico" aria-hidden="true"><use href="src/icons/icons.svg#i-chevron-right"/></svg></button>
+          </div>
+        </nav>
 
       </div>
     </div>

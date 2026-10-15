@@ -98,6 +98,7 @@
 .ov-card { display: block; width: 100%; text-align: left; }
 .ov-card .overlay { display: block; min-width: 0; }              /* la casilla de home.css, sin los ajustes de la fila */
 .ov-card .overlay:not(.is-empty) .overlay-num { display: none; } /* el número solo se ve en el marcador vacío */
+.ov-card .overlay canvas { display: block; width: 100%; height: 100%; object-fit: cover; }   /* primer cuadro del video */
 
 .ov-dur,
 .ov-new {
@@ -127,7 +128,32 @@
 .catalog-empty { margin: 0; padding: 40px 0; color: var(--muted); font-size: 14px; text-align: center; }
 .catalog-error { display: grid; justify-items: center; gap: 12px; padding: 40px 0; text-align: center; }
 .catalog-error p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
-.catalog-sentinel { height: 1px; }
+
+/* ---------- Paginador: abajo a la izquierda, al final de la lista ----------
+   Va dentro del flujo (no flotante): así nunca queda bajo la barra inferior ni junto al tirador del menú,
+   porque la capa ya deja libre el espacio de ambos. Botones de 44 px de alto, el mínimo táctil. */
+.pager { display: grid; justify-items: start; gap: 10px; margin-top: 12px; }
+.pager-info { margin: 0; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.pager-nav { display: flex; gap: 10px; }
+.pager-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 118px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--radius-item);
+  background: var(--surface-dock);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+}
+.pager-btn .ico { width: 18px; height: 18px; stroke-width: 1.8; }
+.pager-btn:disabled { background: var(--active); color: var(--faint); cursor: not-allowed; }
+@media (hover: hover) {
+  .pager-btn:not(:disabled):hover { background: var(--border-hover); }
+}
 
 /* ---------- Hoja de detalle ---------- */
 .sheet {
@@ -156,8 +182,11 @@
   font-size: 14px;
   text-align: center;
 }
+.sheet-preview > * { grid-area: 1 / 1; }          /* el primer cuadro y el video se apilan en la misma casilla */
 .sheet-preview video,
+.sheet-preview canvas,
 .sheet-preview img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sheet-preview video.is-loading { visibility: hidden; }   /* hasta tener imagen propia se ve el primer cuadro */
 
 .sheet-title { margin: 16px 0 0; font-size: 20px; font-weight: 500; }
 .sheet-meta { margin: 4px 0 0; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
