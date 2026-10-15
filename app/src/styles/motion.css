@@ -205,8 +205,10 @@
      Mismos tiempos y curvas que el drawer; solo `translate`, sin tocar el layout.
      ------------------------------------------------------------------------ */
   @media (min-width: 761px) {
-    .home-inner { transition: translate var(--dur-menu-close) var(--ease-in-out); }
-    .app.open .home-inner { transition: translate var(--dur-menu-open) var(--ease-out); }
+    .home-inner,
+    .catalog-inner { transition: translate var(--dur-menu-close) var(--ease-in-out); }
+    .app.open .home-inner,
+    .app.open .catalog-inner { transition: translate var(--dur-menu-open) var(--ease-out); }
   }
 
   /* ------------------------------------------------------------------------
@@ -216,6 +218,8 @@
   .explore-btn,
   .btn,
   .link-btn,
+  .chip,
+  .icon-btn,
   .drop {
     transition:
       background-color var(--dur-fast) var(--ease-standard),
@@ -231,6 +235,30 @@
   .create-btn:active,
   .explore-btn:not(:disabled):active,
   .btn:not(:disabled):active { scale: .98; }
+  .chip:active,
+  .icon-btn:active { scale: .96; }
+
+  /* ------------------------------------------------------------------------
+     Catálogo de overlays: tarjetas y hoja de detalle
+     ------------------------------------------------------------------------ */
+  .ov-card { transition: translate var(--dur-fast) var(--ease-out), scale var(--dur-instant) var(--ease-out); }
+  @media (hover: hover) {
+    .ov-card:hover { translate: 0 -1px; }
+  }
+  .ov-card:active { scale: .98; }
+
+  /* La pantalla entra igual que la página principal: bloques en cascada con un leve ascenso.
+     catalog.js numera los bloques en --i y vuelve a lanzarla cada vez que se muestra. */
+  html:not(.preload) .catalog-inner > :not(.catalog-head) {
+    animation: rise var(--dur-intro) var(--ease-out) calc(var(--i, 0) * var(--stagger) * 2 + 80ms) backwards;
+  }
+  html:not(.preload) .catalog-head {
+    animation: fade-in var(--dur-base) var(--ease-standard) backwards;
+  }
+
+  /* La hoja sube desde abajo y el velo se funde */
+  .sheet[open] { animation: panel-in var(--dur-base) var(--ease-out) backwards; }
+  .sheet[open]::backdrop { animation: fade-in var(--dur-base) var(--ease-standard) backwards; }
 
   /* El panel de proyecto se despliega con un fundido y un leve ascenso */
   html:not(.preload) .home-inner > .project { animation: panel-in var(--dur-base) var(--ease-out) backwards; }
@@ -272,12 +300,19 @@
   .explore-btn,
   .btn,
   .link-btn,
+  .chip,
+  .icon-btn,
   .drop {
     transition:
       background-color var(--dur-fast) var(--ease-standard),
       border-color var(--dur-fast) var(--ease-standard),
       color var(--dur-fast) var(--ease-standard);
   }
+
+  /* Catálogo: la pantalla, la hoja y su velo se funden */
+  .catalog-inner,
+  .sheet[open],
+  .sheet[open]::backdrop { animation: fade-in var(--dur-fade) var(--ease-standard) backwards; }
 
   /* Ítem activo: el fondo y el color cambian con un fundido corto */
   .item {

@@ -36,18 +36,20 @@ app/
 │  │     ├─ handle.css     tirador que abre/cierra el menú
 │  │     ├─ dock.css       barra inferior
 │  │     ├─ home.css       página principal (carrusel, crear proyecto, recorte, overlays)
+│  │     ├─ catalog.css    pantalla Overlays: cabecera, categorías, cuadrícula, hoja de detalle
 │  │     └─ intro.css      pantalla de inicio (logotipo, botones, formulario)
 │  ├─ scripts/
 │  │  ├─ main.js           punto de entrada
 │  │  ├─ menu.js           abrir / cerrar
 │  │  ├─ nav.js            ítem activo en el menú y en la barra inferior
 │  │  ├─ home.js           página principal: carrusel, recorte de video, overlays
+│  │  ├─ catalog.js        pantalla Overlays: catálogo, búsqueda, categorías, detalle y descarga
 │  │  ├─ intro.js          pantalla de inicio: animación, Continuar / Iniciar sesión, salida
 │  │  ├─ session.js        sesión del usuario (local por ahora)
 │  │  ├─ storage.js        localStorage seguro
 │  │  └─ pwa.js            registro del service worker
 │  ├─ media/               video del carrusel (webm + mp4) y su póster
-│  ├─ overlays/            aquí se suben las imágenes de overlays (ver su README)
+│  ├─ overlays/            catalog.json (lista del catálogo) e imágenes de la fila de la home (ver su README)
 │  └─ icons/
 │     ├─ icons.svg         todos los iconos de la interfaz en un solo archivo
 │     └─ app/              iconos de la app instalada (192, 512, maskable, apple-touch, favicon)
@@ -81,7 +83,8 @@ Es lo primero que se ve al entrar (`home.js` + `home.css`, dentro del panel):
 - **Carrusel.** Un video corto sin sonido y en bucle (`src/media/`), con el texto de novedades. En pantallas estrechas el texto va debajo del video para no taparlo. Se detiene con «reducir movimiento» (se ve el póster) y cuando no está a la vista. El desenfoque y el velo claro están incorporados en el propio video, así que no hay ningún filtro en vivo: es lo que mantiene los 60 FPS.
 - **Crear nuevo proyecto** (también con el botón **+** de la barra inferior). Elige un video (tocando, con teclado o arrastrándolo), recorta un fragmento de hasta 60 s con dos tiradores (dedo, ratón o teclado: flechas ±1 s, Mayús ±5 s, RePág/AvPág ±10 s, Inicio/Fin) y la vista previa solo reproduce ese fragmento.
 - **«Procesar video» convierte a DepthStyle en tu dispositivo** (`src/depthstyle/`, sin servidor). Cada fotograma pasa por el modelo Depth Anything V2 small (transformers.js; WebGPU si existe, si no WASM), se normaliza con memoria entre fotogramas (sin parpadeo), se pasa a gris (cercano oscuro, lejano claro y con niebla) y se codifica en un MP4 H.264 con WebCodecs + mp4-muxer. Hay barra de progreso, tiempo restante, botón para cancelar y, al terminar, vista previa y descarga. El MP4 sale sin sonido, a 720p como máximo y a los mismos fps que el video original (tope 30). El modelo corre en un worker (la pantalla no se congela). La primera vez se descarga el modelo (≈27–50 MB, queda en la caché del navegador) y las librerías se cargan de jsDelivr: esa primera conversión necesita conexión. El rótulo junto al título muestra la versión de DepthStyle. Sin GPU la profundidad se calcula con menos resolución y solo en parte de los fotogramas (el resto se interpola), y es bastante más lenta.
-- **Overlays.** La fila de 5 casillas espera las imágenes: súbelas a `src/overlays/` con los nombres `overlay-1.jpg` … `overlay-5.jpg` (ver el README de esa carpeta). Mientras no estén, cada casilla muestra su número. «Explorar Overlays» está desactivado con la nota *Próximamente*.
+- **Overlays.** La fila de 5 casillas espera las imágenes: súbelas a `src/overlays/` con los nombres `overlay-1.jpg` … `overlay-5.jpg` (ver el README de esa carpeta). Mientras no estén, cada casilla muestra su número. «Explorar Overlays» abre el catálogo.
+- **Catálogo de overlays** (ítem **Overlays** del menú, antes «Proyectos», o «Explorar Overlays»; `catalog.js` + `catalog.css`). Cuadrícula de 2 columnas con tarjetas 16:9 que se desplaza hacia abajo, con categorías, búsqueda por nombre (sin distinguir tildes) y carga por tramos de 12. Al tocar una tarjeta se abre una hoja con la vista previa y el botón de descarga. La lista sale de `src/overlays/catalog.json` (ver el README de esa carpeta); añadir overlays es añadir líneas a ese archivo.
 
 ## Pantalla de inicio y sesión
 

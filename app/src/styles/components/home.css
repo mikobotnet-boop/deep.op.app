@@ -7,7 +7,10 @@
 /* Los elementos con `hidden` no deben mostrarse aunque su clase defina `display`. */
 .home [hidden] { display: none !important; }
 
-.home {
+/* `.catalog` (pantalla de overlays, catalog.css) usa la misma capa, el mismo hueco para el menú y el
+   mismo ancho máximo: las reglas de `.home` / `.home-inner` son también las suyas. */
+.home,
+.catalog {
   position: absolute;
   inset: 0;
   z-index: 0;                                   /* el dock (después en el DOM) queda por encima */
@@ -23,7 +26,8 @@
     calc(var(--handle-w) + 14px);
 }
 
-.home-inner {
+.home-inner,
+.catalog-inner {
   display: grid;
   grid-template-columns: minmax(0, 1fr);       /* sin esto, la fila de overlays (scroll horizontal) ensancha la columna */
   gap: 18px;
@@ -36,9 +40,12 @@
    el contenido se desplaza a la izquierda, la mitad del ancho del menú, para quedar centrado en el
    panel entero. Solo se mueve con `translate`; ver motion.css. En móvil el menú se superpone. */
 @media (min-width: 761px) {
-  .home { padding-left: calc(var(--drawer-w) + var(--handle-w) + 14px); }
-  .home-inner { translate: calc(var(--drawer-w) / -2) 0; }
-  .app.open .home-inner { translate: 0 0; }
+  .home,
+  .catalog { padding-left: calc(var(--drawer-w) + var(--handle-w) + 14px); }
+  .home-inner,
+  .catalog-inner { translate: calc(var(--drawer-w) / -2) 0; }
+  .app.open .home-inner,
+  .app.open .catalog-inner { translate: 0 0; }
 }
 
 /* ---------- Carrusel principal ---------- */
@@ -333,7 +340,7 @@
   left: 6px;
   padding: 1px 6px;
   border-radius: 4px;
-  background: rgba(0, 0, 0, .55);
+  background: var(--badge-media);
   color: #fff;
   font-size: 11px;
   font-weight: 600;
@@ -355,7 +362,7 @@
   .overlay { flex-basis: 38%; }
 }
 
-/* ---------- Explorar overlays ---------- */
+/* ---------- Explorar overlays (abre el catálogo, ver catalog.css) ---------- */
 .explore { display: grid; justify-items: center; gap: 8px; }
 .explore-btn {
   width: 100%;
@@ -367,5 +374,3 @@
   font-size: 15px;
   font-weight: 500;
 }
-.explore-btn:disabled { background: var(--active); color: var(--faint); cursor: not-allowed; }
-.explore-note { margin: 0; color: var(--muted); font-size: 13px; }

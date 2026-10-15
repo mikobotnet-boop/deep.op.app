@@ -43,6 +43,8 @@
   --border-strong: #3a3c42;       /* bordes discontinuos de las zonas de carga */
   --hero-shade: linear-gradient(to top, rgba(0, 0, 0, .72) 0%, rgba(0, 0, 0, .4) 50%, transparent 100%);
   --shadow-card: 0 4px 24px rgba(0, 0, 0, .35);
+  --badge-media: rgba(0, 0, 0, .55);   /* fondo de las insignias sobre imágenes y video (número, duración) */
+  --scrim: rgba(0, 0, 0, .6);          /* velo detrás de una hoja modal */
 
   /* ---------- Pantalla de inicio (intro) ---------- */
   --intro-ink: #fff;

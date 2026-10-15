@@ -5,6 +5,7 @@
 import { initMenu } from './menu.js';
 import { initNav } from './nav.js';
 import { initHome } from './home.js';
+import { initCatalog } from './catalog.js';
 import { initIntro } from './intro.js';
 import { registerServiceWorker } from './pwa.js';
 
@@ -14,20 +15,27 @@ const app = document.getElementById('app');
 // Desactiva la red de seguridad de layout.css (que solo actúa si este script no llega a ejecutarse).
 root.classList.add('js-ready');
 
-initMenu({
+const menu = initMenu({
   app,
   rail: document.getElementById('side'),
   drawer: document.getElementById('drawer'),
   handle: document.getElementById('handle'),
 });
 
-initNav({ app });
+const nav = initNav({ app });
 
 // La página principal no es imprescindible para arrancar: si fallara, la app sigue funcionando.
 try {
   initHome({ app });
 } catch (err) {
   console.warn('[home] no se pudo iniciar:', err);
+}
+
+// El catálogo de overlays tampoco es imprescindible para arrancar.
+try {
+  initCatalog({ app, menu, nav });
+} catch (err) {
+  console.warn('[catalog] no se pudo iniciar:', err);
 }
 
 /*

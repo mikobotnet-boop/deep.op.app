@@ -146,10 +146,18 @@ Registro breve de las decisiones tomadas al separar el HTML original (un solo ar
 
 **Decisión.** El nombre se escribe «Deep Op» en toda la app, el manifiesto y la documentación. Los identificadores técnicos (`deepop-menu`, `deepop-session`, el nombre de la caché del service worker y el repositorio `deep.op.app`) no cambian, para no borrar preferencias ni sesiones existentes.
 
+## D20. Catálogo de overlays: pantalla propia y lista en un JSON
+
+**Decisión.** El ítem «Proyectos» del menú pasa a llamarse **Overlays** y abre el catálogo (`src/scripts/catalog.js`, `catalog.css`). La pantalla ocupa el lugar de la página principal (ambas viven en el panel y se alternan con `hidden`); «Inicio», la pestaña Inicio y el botón **+** vuelven a la principal. «Explorar Overlays» también la abre. La lista sale de `src/overlays/catalog.json`, con una dirección `base` opcional.
+
+**Motivo.** Hay 100 overlays en 1080p y la cifra crecerá con las actualizaciones: añadir uno debe ser añadir una línea al JSON, sin tocar código ni `PRECACHE`. Los archivos pesados no se guardan en el repo de la app: `base` permite apuntarlos a un bucket de almacenamiento de objetos (gratuito y sin tarjeta; GitHub Pages queda descartado para esto). Solo hay una calidad (1080p) más la miniatura.
+
+**Detalles.** Cuadrícula de 2 columnas con tarjetas 16:9 que se desplaza hacia abajo; se pintan 12 tarjetas y se piden más al llegar al final (`IntersectionObserver`), así que 100 o 1000 cuestan lo mismo al abrir. Las imágenes usan `loading="lazy"`; el video de 1080p solo se pide al abrir el detalle y se suelta al cerrarlo. Un solo video activo a la vez. El catálogo se pide la primera vez que se abre la pantalla, no al arrancar. Todo el texto del catálogo se inserta con `textContent`. La cabecera es `sticky` con `top: -20px` para compensar el padding de la capa (con `top: 0` Chrome la bajaba 20 px y tapaba la primera fila). Reutiliza `.overlay`, `.btn`, `.status` y los tokens de la app (texto 14/13 px, títulos 20 px/500, insignias 11 px/600, números con `tabular-nums`); los dos tokens nuevos son `--badge-media` y `--scrim`.
+
 ## Pendiente / deuda conocida
 
 - **Menú duplicado en el HTML.** La barra de iconos y el drawer repiten la misma lista de ítems (como en el original). Cuando la navegación sea real, conviene generarla desde un único arreglo de datos.
-- **Overlays.** Las 5 casillas esperan las imágenes que subirá el propietario del proyecto a `src/overlays/`. «Explorar Overlays» no hace nada todavía.
+- **Overlays.** Las 5 casillas de la home esperan las imágenes que subirá el propietario a `src/overlays/`. El catálogo (D20) tiene 8 entradas de ejemplo sin miniatura ni video: falta elegir el bucket de almacenamiento, subir los 100 videos 1080p (WebM con alfa) y sus miniaturas, y rellenar `catalog.json` con `base`, `thumb` y `video`.
 - **Conversión a DepthStyle.** Falta probarla con el modelo real en un teléfono Android (en el entorno de desarrollo no hay acceso a jsDelivr ni a Hugging Face), ajustar el aspecto a la referencia, añadir overlays encima y el audio original.
 - **Sesión sin servidor.** `session.js` es local y no hay forma de cerrar sesión desde la interfaz (existe `signOut()`, falta el botón).
 - **Submenú "Actividad".** Tiene `aria-expanded="true"` y un chevron, pero no se pliega. Sin cambios respecto al original.

@@ -1,0 +1,163 @@
+/* ==========================================================================
+   catalog.css — pantalla «Overlays»: cabecera con búsqueda y categorías, cuadrícula de tarjetas
+   y hoja de detalle.
+
+   Comparte con la página principal (home.css) la capa, el hueco reservado para el menú y el ancho
+   máximo. Las casillas de imagen reutilizan `.overlay`, `.overlay-num` y `.is-empty` de home.css,
+   así que una casilla del catálogo y una de la fila de la home se ven igual. Los botones de la hoja
+   son los mismos `.btn` y `.actions`. Aquí solo está el estado final; el movimiento va en motion.css.
+   ========================================================================== */
+
+.catalog [hidden],
+.catalog[hidden] { display: none !important; }
+
+.catalog-inner { gap: 6px; }
+
+/* ---------- Cabecera: se queda fija arriba mientras se desplaza la cuadrícula ---------- */
+.catalog-head {
+  position: sticky;
+  top: -20px;                        /* el navegador respeta el padding de la capa al fijarla: -20px lo compensa y evita que baje y tape la primera fila */
+  z-index: 1;
+  margin-top: -20px;                 /* cubre el padding superior de la capa para que nada se vea por encima */
+  padding: 20px 0 12px;
+  background: var(--panel);
+}
+.catalog-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.catalog-title { margin: 0; font-size: 20px; font-weight: 500; }
+.catalog-title:focus { outline: none; }          /* solo recibe foco por código, al abrir la pantalla */
+.catalog-count { margin: 2px 0 0; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+
+.icon-btn {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--muted);
+}
+.icon-btn[aria-expanded="true"] { background: var(--active); color: var(--text); }
+@media (hover: hover) {
+  .icon-btn:hover { color: var(--text); }
+}
+
+.catalog-search {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-item);
+  background: var(--surface-drawer);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;                   /* 16 px evita el zoom automático al enfocar en iOS */
+  -webkit-appearance: none;
+  appearance: none;
+}
+.catalog-search::placeholder { color: var(--faint); }
+
+/* ---------- Categorías ---------- */
+.chips {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--surface-dock);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+.chip[aria-pressed="true"] { background: var(--accent-solid); color: #fff; }
+@media (hover: hover) {
+  .chip:not([aria-pressed="true"]):hover { background: var(--border-hover); color: var(--text); }
+}
+
+/* ---------- Cuadrícula: 2 columnas en el móvil; en pantallas anchas, tantas como quepan ---------- */
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 761px) {
+  .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+}
+
+.ov-card { display: block; width: 100%; text-align: left; }
+.ov-card .overlay { display: block; min-width: 0; }              /* la casilla de home.css, sin los ajustes de la fila */
+.ov-card .overlay:not(.is-empty) .overlay-num { display: none; } /* el número solo se ve en el marcador vacío */
+
+.ov-dur,
+.ov-new {
+  position: absolute;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--badge-media);
+  font-size: 11px;
+  font-weight: 600;                  /* igual que .overlay-num de la fila de la home */
+  font-variant-numeric: tabular-nums;
+}
+.ov-dur { right: 6px; bottom: 5px; color: #fff; }
+.ov-new { left: 6px; top: 5px; color: var(--violet-soft); }
+
+.ov-name {
+  display: block;
+  margin-top: 8px;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ov-cat { display: block; color: var(--muted); font-size: 13px; }
+
+/* ---------- Estados: sin resultados y error de carga ---------- */
+.catalog-empty { margin: 0; padding: 40px 0; color: var(--muted); font-size: 14px; text-align: center; }
+.catalog-error { display: grid; justify-items: center; gap: 12px; padding: 40px 0; text-align: center; }
+.catalog-error p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+.catalog-sentinel { height: 1px; }
+
+/* ---------- Hoja de detalle ---------- */
+.sheet {
+  width: min(560px, 100vw);
+  max-width: 100vw;
+  max-height: calc(100dvh - var(--safe-top) - 16px);
+  margin: auto auto 0;               /* pegada abajo y centrada */
+  padding: 0;                        /* sin padding: un clic en el velo cae sobre el <dialog> y lo cierra */
+  overflow-y: auto;
+  border: 0;
+  border-radius: var(--radius-drawer) var(--radius-drawer) 0 0;
+  background: var(--surface-drawer);
+  color: var(--text);
+}
+.sheet::backdrop { background: var(--scrim); }
+.sheet-body { padding: 16px 16px calc(16px + var(--safe-bottom)); }
+
+.sheet-preview {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-item);
+  background: var(--surface-dock);
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+.sheet-preview video,
+.sheet-preview img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.sheet-title { margin: 16px 0 0; font-size: 20px; font-weight: 500; }
+.sheet-meta { margin: 4px 0 0; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }

@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="src/styles/components/handle.css">
   <link rel="stylesheet" href="src/styles/components/dock.css">
   <link rel="stylesheet" href="src/styles/components/home.css">
+  <link rel="stylesheet" href="src/styles/components/catalog.css">
   <link rel="stylesheet" href="src/styles/components/intro.css">
   <!-- Fase 2: se puede quitar esta línea y la app sigue funcionando, solo que sin movimiento -->
   <link rel="stylesheet" href="src/styles/motion.css">
@@ -54,7 +55,7 @@
       <div class="sub">
         <button class="item" data-tip="Resumen"><span class="dot v"></span><span class="txt">Resumen</span></button>
         <button class="item" data-tip="Analítica"><span class="dot p"></span><span class="txt">Analítica</span></button>
-        <button class="item" data-tip="Proyectos"><span class="dot r"></span><span class="txt">Proyectos</span></button>
+        <button class="item" data-tip="Overlays"><span class="dot r"></span><span class="txt">Overlays</span></button>
       </div>
       <button class="item" data-tip="Tareas"><svg class="ico"><use href="src/icons/icons.svg#i-tasks"/></svg><span class="txt">Tareas</span></button>
       <button class="item" data-tip="Informes"><svg class="ico"><use href="src/icons/icons.svg#i-alert"/></svg><span class="txt">Informes</span></button>
@@ -174,9 +175,39 @@
         </section>
 
         <div class="explore">
-          <button type="button" class="explore-btn" disabled aria-describedby="exploreNote">Explorar Overlays</button>
-          <p class="explore-note" id="exploreNote">Próximamente</p>
+          <button type="button" class="explore-btn" id="exploreOverlays">Explorar Overlays</button>
         </div>
+
+      </div>
+    </div>
+
+    <!-- Catálogo de overlays: ocupa el lugar de la página principal mientras se ve (ver src/scripts/catalog.js).
+         Las tarjetas las crea catalog.js a partir de src/overlays/catalog.json. -->
+    <div class="catalog" id="catalog" hidden>
+      <div class="catalog-inner">
+
+        <header class="catalog-head">
+          <div class="catalog-top">
+            <div>
+              <h2 class="catalog-title" id="catalogTitle" tabindex="-1">Overlays</h2>
+              <p class="catalog-count" id="catalogCount" role="status"></p>
+            </div>
+            <button type="button" class="icon-btn" id="catalogSearchBtn" aria-label="Buscar" aria-expanded="false" aria-controls="catalogSearch">
+              <svg class="ico"><use href="src/icons/icons.svg#i-search"/></svg>
+            </button>
+          </div>
+          <input class="catalog-search" id="catalogSearch" type="search" placeholder="Buscar por nombre" aria-label="Buscar overlays por nombre" autocomplete="off" enterkeyhint="search" hidden>
+          <div class="chips" id="catalogChips" role="group" aria-label="Categorías"></div>
+        </header>
+
+        <ul class="catalog-grid" id="catalogGrid"></ul>
+
+        <p class="catalog-empty" id="catalogEmpty" hidden></p>
+        <div class="catalog-error" id="catalogError" hidden>
+          <p>No se pudo cargar el catálogo. Revisa tu conexión e inténtalo de nuevo.</p>
+          <button type="button" class="btn btn--secondary" id="catalogRetry">Reintentar</button>
+        </div>
+        <div class="catalog-sentinel" id="catalogSentinel" aria-hidden="true"></div>
 
       </div>
     </div>
@@ -192,7 +223,7 @@
         <div class="sub">
           <button class="item" data-x="Resumen"><span class="dot v"></span><span class="txt">Resumen</span></button>
           <button class="item" data-x="Analítica"><span class="dot p"></span><span class="txt">Analítica</span></button>
-          <button class="item" data-x="Proyectos"><span class="dot r"></span><span class="txt">Proyectos</span></button>
+          <button class="item" data-x="Overlays"><span class="dot r"></span><span class="txt">Overlays</span></button>
         </div>
         <button class="item" data-x="Tareas"><svg class="ico"><use href="src/icons/icons.svg#i-tasks"/></svg><span class="txt">Tareas</span></button>
         <button class="item" data-x="Informes"><svg class="ico"><use href="src/icons/icons.svg#i-alert"/></svg><span class="txt">Informes</span></button>
@@ -219,6 +250,20 @@
     </nav>
   </main>
 </div>
+
+<!-- Detalle de un overlay (hoja inferior). Es un <dialog> modal: el navegador gestiona el foco y Escape. -->
+<dialog class="sheet" id="overlaySheet" aria-labelledby="sheetName">
+  <div class="sheet-body">
+    <div class="sheet-preview" id="sheetPreview"></div>
+    <h2 class="sheet-title" id="sheetName"></h2>
+    <p class="sheet-meta" id="sheetMeta"></p>
+    <p class="status" id="sheetStatus" role="status" aria-live="polite"></p>
+    <div class="actions">
+      <button type="button" class="btn btn--secondary" id="sheetClose">Cerrar</button>
+      <button type="button" class="btn btn--primary" id="sheetDownload">Descargar overlay</button>
+    </div>
+  </div>
+</dialog>
 
 <!-- Pantalla de inicio: cubre la app hasta que termina la animación (ver src/scripts/intro.js).
      Los botones empiezan ocultos: intro.js los muestra solo si no hay sesión iniciada. -->
