@@ -1,8 +1,7 @@
 {
   "version": 1,
-  "base": "https://miko-net.s3.filebase.io/",
+  "base": "https://mikobotnet-boop.github.io/Deep-Op-Overlays/videos/",
   "items": [
-    { "name": "Overlay 001", "category": "Prueba", "video": "Deep.op001.mp4" },
     { "name": "Overlay 002", "category": "Prueba", "video": "Deep.op002.mp4" },
     { "name": "Overlay 003", "category": "Prueba", "video": "Deep.op003.mp4" },
     { "name": "Overlay 004", "category": "Prueba", "video": "Deep.op004.mp4" },

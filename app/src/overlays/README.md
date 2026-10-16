@@ -22,7 +22,7 @@ overlay-5.jpg
 ## Catálogo (`catalog.json`)
 
 Es la lista que muestra la pantalla **Overlays** (ítem del menú, antes «Proyectos»). Cada overlay es una
-línea; añadir uno no obliga a tocar código. Basta con subir el **video** al bucket y añadir su línea:
+línea; añadir uno no obliga a tocar código. Basta con subir el **video** a la carpeta `videos/` del repositorio `Deep-Op-Overlays` y añadir su línea:
 
 ```json
 { "name": "Niebla suave", "category": "Humo", "video": "Deep.op009.mp4" }
@@ -32,13 +32,15 @@ línea; añadir uno no obliga a tocar código. Basta con subir el **video** al b
 - **No hace falta miniatura.** La tarjeta pide solo el principio del video, pinta su primer cuadro y suelta
   el video. Tampoco hace falta `duration`: se lee del propio video. Ambos se pueden indicar si se quiere
   (`thumb`: imagen 16:9 propia; `duration`: segundos; `new: true`: etiqueta «Nuevo»).
-- `base` (arriba del todo) es la dirección donde están los archivos: ahora el bucket de Filebase. Vacío =
+- `base` (arriba del todo) es la dirección donde están los archivos: ahora `https://mikobotnet-boop.github.io/Deep-Op-Overlays/videos/` (GitHub Pages del repositorio de videos). Vacío =
   junto a `catalog.json`. Si algún día se cambia de servicio, solo se mueve el contenido y se cambia `base`.
 - La lista se muestra en **páginas de 10** con botones Anterior / Siguiente. Con 10 overlays o menos no
   aparece el paginador.
 - Para que las vistas previas pesen poco, exporta los videos **optimizados para web** (índice al inicio,
   «faststart»). Si no, el navegador puede tener que bajar el archivo entero solo para sacar el primer cuadro.
-- El bucket debe ser **público** (si no, las tarjetas se quedan con el número y la hoja avisa de que no
-  se pudo cargar el video). El botón «Descargar overlay» necesita además CORS en el bucket, porque descarga
-  el archivo con `fetch`; las vistas previas y la reproducción no lo necesitan.
+- El repositorio `Deep-Op-Overlays` debe ser **público** y tener GitHub Pages activo (Settings → Pages →
+  Deploy from a branch → `main` / raíz); si no, las tarjetas se quedan con el número y la hoja avisa de que
+  no se pudo cargar el video. Los nombres de archivo distinguen mayúsculas. No hace falta CORS: la app y los
+  videos comparten origen (`mikobotnet-boop.github.io`), así que el botón de descarga funciona.
+- Formato recomendado: MP4 H.264 con «faststart» (HEVC no se reproduce en todos los navegadores).
 - Los videos **no** van en `PRECACHE` (pesan demasiado); `catalog.json` sí.

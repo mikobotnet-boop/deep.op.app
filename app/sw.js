@@ -88,6 +88,9 @@ self.addEventListener('fetch', (event) => {
   // Solo se gestionan archivos propios. Las fuentes de Google las resuelve el navegador
   // (sin conexión se usa la tipografía del sistema, como en el CSS: var(--font)).
   if (new URL(request.url).origin !== self.location.origin) return;
+  // Los videos de overlays viven en otro repositorio del mismo sitio (misma origen, otra ruta): fuera del alcance
+  // de la app, así que no deben llenar la copia sin conexión.
+  if (!request.url.startsWith(self.registration.scope)) return;
 
   // El video del carrusel se pide por tramos (cabecera Range) y la caché no admite respuestas
   // parciales: lo gestiona el navegador. Sin conexión se ve el póster (que sí está en PRECACHE).

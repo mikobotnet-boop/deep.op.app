@@ -6,7 +6,7 @@
  *    «Inicio» (menú) y la pestaña Inicio del dock vuelven a la página principal.
  *  - Datos: `src/overlays/catalog.json` (ver el README de esa carpeta). Se pide la primera vez que
  *    se abre la pantalla, no al arrancar la app. `base` permite apuntar los archivos a otro sitio
- *    (por ejemplo, un bucket) sin tocar el código.
+ *    (por ejemplo, otro repositorio de GitHub Pages) sin tocar el código.
  *  - Lista: PAGE_SIZE tarjetas por página, con botones Anterior / Siguiente. 100 overlays o 1000
  *    cuestan lo mismo al abrir: solo se preparan las 10 de la página que se ve.
  *  - Vista previa: si el overlay no trae miniatura (`thumb`), la tarjeta pide solo el principio del
