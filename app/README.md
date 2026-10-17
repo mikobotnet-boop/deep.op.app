@@ -72,6 +72,7 @@ El orden de las hojas de estilo en `index.html` importa: de lo más global (`tok
 ## Accesibilidad
 
 - Si el sistema tiene activado "reducir movimiento", la app funciona igual pero sin desplazamientos ni animación continua; solo quedan fundidos cortos (pantalla de inicio → interfaz, cambio de ítem activo). El logotipo de la pantalla de inicio aparece ya completo.
+- Tema Oscuro / Claro / Sistema en Ajustes (ver `docs/decisions.md`, D21). El selector se maneja con teclado (flechas).
 - El menú cerrado no recibe foco (`inert`) y los lectores de pantalla no lo leen.
 - En pantallas pequeñas el menú arranca cerrado y `Escape` lo cierra.
 - El foco siempre es visible con el teclado.

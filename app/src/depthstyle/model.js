@@ -7,6 +7,7 @@
 
 import { STALL_TIMEOUT_MS, ESTIMATE_TIMEOUT_MS, TRANSFORMERS_URL, PROBE_TIMEOUT_MS } from './config.js';
 import { DEPTHSTYLE_VERSION } from './version.js';
+import { storage, KEYS } from '../scripts/storage.js';   // la preferencia «Usar la GPU» de Ajustes
 
 /* =========================================================
    Errores y compatibilidad
@@ -24,7 +25,7 @@ const MESSAGES = {
   network: 'Sin conexión con el servidor de librerías. La primera conversión necesita internet para descargar el modelo (≈50 MB). Conéctate y vuelve a intentarlo.',
   timeoutLoad: 'El modelo tardó demasiado en cargarse (descarga o preparación). Revisa tu conexión y vuelve a intentarlo.',
   timeoutFrame: 'Un fotograma tardó demasiado en calcularse. Cierra otras apps, prueba con un fragmento más corto y vuelve a intentarlo.',
-  gpuTimeout: 'La GPU del teléfono no respondió a tiempo. Cambié al modo sin GPU (más lento, pero más compatible): pulsa «Procesar video» otra vez. Para volver a probar la GPU, abre la app con ?cpu=0 al final de la dirección.',
+  gpuTimeout: 'La GPU del teléfono no respondió a tiempo. Cambié al modo sin GPU (más lento, pero más compatible): pulsa «Procesar video» otra vez. Para volver a probar la GPU, actívala en Ajustes.',
   worker: 'No se pudo iniciar el motor de conversión en este navegador. Prueba con Chrome actualizado.',
 };
 
@@ -32,21 +33,31 @@ function modelError(code, detail) {
   return new DepthStyleError(code, MESSAGES[code] ?? `No se pudo cargar el modelo de profundidad${detail ? ` (${detail})` : ''}.`);
 }
 
-/* Preferencia «sin GPU»: se activa sola si la GPU se cuelga, o a mano con ?cpu=1 (y ?cpu=0 la quita).
-   Se guarda junto con la versión de DepthStyle: en cuanto sale una versión nueva se vuelve a probar la GPU. */
-const CPU_KEY = 'depthstyle.forceCpu';
-function readCpuPref() {
-  try {
-    const q = new URLSearchParams(location.search).get('cpu');
-    if (q === '1') localStorage.setItem(CPU_KEY, DEPTHSTYLE_VERSION);
-    if (q === '0') localStorage.removeItem(CPU_KEY);
-    return localStorage.getItem(CPU_KEY) === DEPTHSTYLE_VERSION;
-  } catch { return false; }
+/* Preferencia «sin GPU». Tres orígenes, de más a menos fuerte:
+   1. El interruptor «Usar la GPU» de Ajustes: KEYS.gpu = '0' (apagado) o '1' (encendido a mano).
+   2. Se activa sola si la GPU se cuelga (preferCpu): se guarda KEYS.gpuAuto junto con la versión de
+      DepthStyle, así que en cuanto sale una versión nueva se vuelve a probar la GPU.
+   3. A mano con ?cpu=1 en la dirección (y ?cpu=0 la quita).
+   Ajustes lee estas mismas claves para mostrar el interruptor, así que lo que ve el usuario es lo que se usa. */
+let autoCpu = false;   // la GPU se colgó en esta sesión (respaldo si localStorage no funciona)
+
+try {
+  const q = new URLSearchParams(location.search).get('cpu');
+  if (q === '1') storage.set(KEYS.gpuAuto, DEPTHSTYLE_VERSION);
+  if (q === '0') { storage.remove(KEYS.gpuAuto); storage.set(KEYS.gpu, '1'); }
+} catch { /* sin location: no hay nada que leer */ }
+
+function cpuWanted() {
+  const pref = storage.get(KEYS.gpu);
+  if (pref === '0') return true;                      // la apagó el usuario
+  if (pref === '1') { autoCpu = false; return false; } // la encendió a mano (también borra la desactivación automática)
+  return autoCpu || storage.get(KEYS.gpuAuto) === DEPTHSTYLE_VERSION;
 }
-let forceCpu = readCpuPref();
+
 function preferCpu() {
-  forceCpu = true;
-  try { localStorage.setItem(CPU_KEY, DEPTHSTYLE_VERSION); } catch { /* sin almacenamiento: solo esta sesión */ }
+  autoCpu = true;
+  storage.remove(KEYS.gpu);                           // lo que acaba de pasar vale más que un «sí» anterior
+  storage.set(KEYS.gpuAuto, DEPTHSTYLE_VERSION);
 }
 
 /** ¿Hay conexión con el servidor de librerías? Se comprueba antes de culpar a la GPU de un bloqueo. */
@@ -83,9 +94,9 @@ function stopClient(c) {
   if (client === c) client = null;
 }
 
-function startClient() {
+function startClient(cpu) {
   const worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
-  const c = { worker, onProgress: () => {}, pending: new Map(), nextId: 1, profile: null, watchdog: 0, gpu: false, downloading: false };
+  const c = { worker, cpu, onProgress: () => {}, pending: new Map(), nextId: 1, profile: null, watchdog: 0, gpu: false, downloading: false };
 
   const fail = (err) => {
     if (c.dead) return;
@@ -130,7 +141,7 @@ function startClient() {
 
   c.onProgress({ phase: 'model', fraction: null });
   arm();
-  worker.postMessage({ type: 'load', cpu: forceCpu });
+  worker.postMessage({ type: 'load', cpu });
   return c;
 }
 
@@ -144,7 +155,10 @@ function startClient() {
  */
 export async function loadDepthModel(onProgress = () => {}, signal) {
   if (signal?.aborted) throw abortError();
-  const c = client ?? (client = startClient());
+  // Si desde la última conversión se cambió «Usar la GPU», el motor ya cargado se descarta (el modelo está en caché: es rápido).
+  const cpu = cpuWanted();
+  if (client?.profile && client.cpu !== cpu && client.pending.size === 0) stopClient(client);
+  const c = client ?? (client = startClient(cpu));
   c.onProgress = onProgress;
   if (c.profile) onProgress({ phase: 'prepare', fraction: null });
 

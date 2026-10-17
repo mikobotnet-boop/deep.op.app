@@ -18,7 +18,7 @@
   margin-inline: auto;
   background: var(--surface-dock);
   border-radius: calc(var(--dock-h) / 2);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, .55), 0 2px 0 rgba(255, 255, 255, .03) inset;
+  box-shadow: var(--shadow-dock);
 }
 
 /* Muesca superior que abraza el botón central */
@@ -46,7 +46,7 @@
 }
 .dock .tab .ico { width: 22px; height: 22px; }
 .dock .tab:hover,
-.dock .tab.on { color: #fff; }
+.dock .tab.on { color: var(--dock-active); }
 
 /* Punto indicador: siempre existe; solo se muestra en la pestaña activa.
    (Así el cambio de pestaña puede animarse con una transición.) */

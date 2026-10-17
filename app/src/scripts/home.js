@@ -11,6 +11,8 @@
  */
 
 import { DEPTHSTYLE_VERSION } from '../depthstyle/version.js';   // solo la versión: el motor se carga al pulsar «Procesar»
+import { motion } from './motion.js';
+import { notifications } from './notify.js';
 
 /* =========================================================
    Ajustes
@@ -48,7 +50,6 @@ export function initHome({ app }) {
   if (!root) return null;
 
   const $ = (id) => root.querySelector(`#${id}`);
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   // Entrada escalonada de los bloques (la regla está en motion.css)
   [...root.querySelector('.home-inner').children].forEach((el, i) => el.style.setProperty('--i', i));
@@ -59,12 +60,12 @@ export function initHome({ app }) {
 
   function syncHero() {
     if (!hero) return;
-    if (reduceMotion.matches || !heroVisible) hero.pause();
+    if (motion.reduced() || !heroVisible) hero.pause();
     else hero.play().catch(() => {});
   }
   if (hero) {
-    reduceMotion.addEventListener('change', syncHero);
-    hero.addEventListener('play', () => { if (reduceMotion.matches) hero.pause(); });
+    motion.onChange(syncHero);
+    hero.addEventListener('play', () => { if (motion.reduced()) hero.pause(); });
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(([entry]) => {
         heroVisible = entry.isIntersecting;
@@ -129,7 +130,7 @@ export function initHome({ app }) {
       openBtn.hidden = true;
       measure();
     }
-    panel.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' });
+    panel.scrollIntoView({ behavior: motion.reduced() ? 'auto' : 'smooth', block: 'start' });
     title.focus({ preventScroll: true });
   }
 
@@ -464,10 +465,15 @@ export function initHome({ app }) {
       resultBox.hidden = false;
       showProgress(null);
       setStatus(`Listo: DepthStyle de ${Math.round(seconds)} s${outFps ? ` a ${outFps} fps` : ''} (sin sonido).`, 'ok');
+      notifications.done('Tu video DepthStyle está listo', 'Abre Deep Op para verlo y descargarlo.');   // solo si Ajustes lo permite y la app no está a la vista
     } catch (err) {
       showProgress(null);
-      if (err?.name === 'AbortError') setStatus('Conversión cancelada.', 'ok');
-      else setStatus(friendlyError(err), 'error');
+      if (err?.name === 'AbortError') {
+        setStatus('Conversión cancelada.', 'ok');
+      } else {
+        setStatus(friendlyError(err), 'error');
+        notifications.done('No se pudo convertir el video', 'Abre Deep Op para ver el detalle.');
+      }
     } finally {
       job = null;
       setBusy(false);

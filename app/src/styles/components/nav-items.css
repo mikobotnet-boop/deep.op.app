@@ -58,7 +58,7 @@
 
 .sub { padding: 4px 0 4px 16px; }
 .sub .item { color: var(--text); }
-.sub .item:hover { background: rgba(255, 255, 255, .05); }
+.sub .item:hover { background: var(--hover-soft); }
 
 .dot { flex: none; width: 10px; height: 10px; border-radius: 50%; }
 .dot.v { background: var(--violet); }

@@ -7,10 +7,11 @@
 /* Los elementos con `hidden` no deben mostrarse aunque su clase defina `display`. */
 .home [hidden] { display: none !important; }
 
-/* `.catalog` (pantalla de overlays, catalog.css) usa la misma capa, el mismo hueco para el menú y el
-   mismo ancho máximo: las reglas de `.home` / `.home-inner` son también las suyas. */
+/* `.catalog` (pantalla de overlays, catalog.css) y `.settings` (Ajustes, settings.css) usan la misma capa,
+   el mismo hueco para el menú y el mismo ancho máximo: las reglas de `.home` / `.home-inner` son también las suyas. */
 .home,
-.catalog {
+.catalog,
+.settings {
   position: absolute;
   inset: 0;
   z-index: 0;                                   /* el dock (después en el DOM) queda por encima */
@@ -27,7 +28,8 @@
 }
 
 .home-inner,
-.catalog-inner {
+.catalog-inner,
+.settings-inner {
   display: grid;
   grid-template-columns: minmax(0, 1fr);       /* sin esto, la fila de overlays (scroll horizontal) ensancha la columna */
   gap: 18px;
@@ -41,11 +43,14 @@
    panel entero. Solo se mueve con `translate`; ver motion.css. En móvil el menú se superpone. */
 @media (min-width: 761px) {
   .home,
-  .catalog { padding-left: calc(var(--drawer-w) + var(--handle-w) + 14px); }
+  .catalog,
+  .settings { padding-left: calc(var(--drawer-w) + var(--handle-w) + 14px); }
   .home-inner,
-  .catalog-inner { translate: calc(var(--drawer-w) / -2) 0; }
+  .catalog-inner,
+  .settings-inner { translate: calc(var(--drawer-w) / -2) 0; }
   .app.open .home-inner,
-  .app.open .catalog-inner { translate: 0 0; }
+  .app.open .catalog-inner,
+  .app.open .settings-inner { translate: 0 0; }
 }
 
 /* ---------- Carrusel principal ---------- */
@@ -90,7 +95,7 @@
   .hero { display: grid; aspect-ratio: auto; max-height: none; }
   .hero-media { height: auto; aspect-ratio: 16 / 9; }
   .hero-shade { display: none; }
-  .hero-text { position: static; max-width: none; padding: 14px 16px 16px; text-shadow: none; }
+  .hero-text { position: static; max-width: none; padding: 14px 16px 16px; color: var(--text); text-shadow: none; }   /* ya no va sobre el video: usa el color del tema */
 }
 .hero-title {
   margin: 0 0 4px;

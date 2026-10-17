@@ -4,6 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="dark">
+  <!-- Tema: se decide antes del primer pintado para que no parpadee. Mismas reglas que src/scripts/theme.js. -->
+  <script>
+    (function () {
+      try {
+        var c = localStorage.getItem("deepop-theme"), r = document.documentElement;
+        var light = c === "light" || (c === "system" && matchMedia("(prefers-color-scheme: light)").matches);
+        r.setAttribute("data-theme", light ? "light" : "dark");
+        if (light) {
+          document.querySelector('meta[name="color-scheme"]').content = "light";
+          document.querySelector('meta[name="theme-color"]').content = "#e8e8ee";
+        }
+      } catch (e) {}
+    })();
+  </script>
   <meta name="theme-color" content="#000000">
   <title>Deep Op</title>
 
@@ -31,6 +45,7 @@
   <link rel="stylesheet" href="src/styles/components/dock.css">
   <link rel="stylesheet" href="src/styles/components/home.css">
   <link rel="stylesheet" href="src/styles/components/catalog.css">
+  <link rel="stylesheet" href="src/styles/components/settings.css">
   <link rel="stylesheet" href="src/styles/components/intro.css">
   <!-- Fase 2: se puede quitar esta línea y la app sigue funcionando, solo que sin movimiento -->
   <link rel="stylesheet" href="src/styles/motion.css">
@@ -220,6 +235,114 @@
       </div>
     </div>
 
+    <!-- Ajustes: también ocupa el lugar de la página principal (ver src/scripts/screens.js y settings.js). -->
+    <div class="settings" id="settings" hidden>
+      <div class="settings-inner">
+
+        <header class="settings-head">
+          <button type="button" class="icon-btn" id="settingsBack" aria-label="Volver"><svg class="ico"><use href="src/icons/icons.svg#i-chevron-left"/></svg></button>
+          <h2 class="settings-title" id="settingsTitle" tabindex="-1">Ajustes</h2>
+        </header>
+
+        <section class="s-me" aria-label="Cuenta">
+          <div class="s-avatar" id="meAvatar" aria-hidden="true">
+            <span id="meInitial" hidden></span>
+            <svg class="ico" id="meIcon"><use href="src/icons/icons.svg#i-user"/></svg>
+          </div>
+          <div class="s-me-text">
+            <b id="meName">Tu cuenta</b>
+            <small id="meDetail"></small>
+            <button type="button" class="link-btn" id="meAction">Cerrar sesión</button>
+          </div>
+        </section>
+
+        <section class="s-group" aria-labelledby="sAppearance">
+          <h3 id="sAppearance">Apariencia</h3>
+          <div class="s-list">
+            <div class="s-row s-row--theme">
+              <svg class="ico" aria-hidden="true"><use href="src/icons/icons.svg#i-moon"/></svg>
+              <span class="s-text"><b id="lblTheme">Tema</b><small id="hintTheme"></small></span>
+              <div class="s-seg" id="themeSeg" role="radiogroup" aria-labelledby="lblTheme">
+                <button type="button" role="radio" aria-checked="false" data-v="dark">Oscuro</button>
+                <button type="button" role="radio" aria-checked="false" data-v="light">Claro</button>
+                <button type="button" role="radio" aria-checked="false" data-v="system">Sistema</button>
+              </div>
+            </div>
+            <button type="button" class="s-row" id="swMotion" role="switch" aria-checked="false" aria-labelledby="lblMotion" aria-describedby="hintMotion">
+              <svg class="ico" aria-hidden="true"><use href="src/icons/icons.svg#i-motion"/></svg>
+              <span class="s-text"><b id="lblMotion">Reducir animaciones</b><small id="hintMotion"></small></span>
+              <span class="sw" aria-hidden="true"></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="s-group" aria-labelledby="sProcessing">
+          <h3 id="sProcessing">Procesamiento</h3>
+          <div class="s-list">
+            <button type="button" class="s-row" id="swGpu" role="switch" aria-checked="false" aria-labelledby="lblGpu" aria-describedby="hintGpu">
+              <svg class="ico" aria-hidden="true"><use href="src/icons/icons.svg#i-chip"/></svg>
+              <span class="s-text"><b id="lblGpu">Usar la GPU</b><small id="hintGpu"></small></span>
+              <span class="sw" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="s-row" id="swNotify" role="switch" aria-checked="false" aria-labelledby="lblNotify" aria-describedby="hintNotify">
+              <svg class="ico" aria-hidden="true"><use href="src/icons/icons.svg#i-bell"/></svg>
+              <span class="s-text"><b id="lblNotify">Avisarme al terminar</b><small id="hintNotify"></small></span>
+              <span class="sw" aria-hidden="true"></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="s-group" aria-labelledby="sStorage">
+          <h3 id="sStorage">Almacenamiento</h3>
+          <div class="s-list s-store">
+            <div class="s-store-top"><b id="storeTotal">—</b><span>usados por Deep Op</span></div>
+            <div class="s-meter" id="storeMeter" role="img" aria-label="Uso de almacenamiento">
+              <i class="c-model"></i><i class="c-app"></i><i class="c-other"></i>
+            </div>
+            <ul class="s-legend">
+              <li><em class="c-model"></em>Modelo de DepthStyle<span id="storeModel">—</span></li>
+              <li><em class="c-app"></em>Copia sin conexión<span id="storeApp">—</span></li>
+              <li><em class="c-other"></em>Otros archivos<span id="storeOther">—</span></li>
+              <li class="is-free"><em></em>Espacio disponible<span id="storeFree">—</span></li>
+            </ul>
+            <p class="s-note" id="storeNote"></p>
+            <button type="button" class="btn btn--secondary" id="clearModel" disabled>Borrar modelo descargado</button>
+          </div>
+        </section>
+
+        <section class="s-group" aria-labelledby="sPrivacy">
+          <h3 id="sPrivacy">Privacidad</h3>
+          <div class="s-list">
+            <div class="s-row">
+              <svg class="ico" aria-hidden="true"><use href="src/icons/icons.svg#i-lock"/></svg>
+              <span class="s-text"><b>Tus videos no salen del teléfono</b><small>Todo se procesa en este dispositivo.</small></span>
+            </div>
+            <button type="button" class="s-row" id="openPrivacy">
+              <svg class="ico" aria-hidden="true"><use href="src/icons/icons.svg#i-doc"/></svg>
+              <span class="s-text"><b>Política de privacidad</b></span>
+              <svg class="ico s-chev" aria-hidden="true"><use href="src/icons/icons.svg#i-chevron-right"/></svg>
+            </button>
+            <button type="button" class="s-row" id="wipeData">
+              <svg class="ico" aria-hidden="true"><use href="src/icons/icons.svg#i-trash"/></svg>
+              <span class="s-text"><b>Borrar mis datos locales</b><small>Quita ajustes, modelo descargado y copia sin conexión de este teléfono.</small></span>
+            </button>
+          </div>
+        </section>
+
+        <p class="s-version" id="appVersion"></p>
+
+        <section class="s-group" id="deleteGroup" aria-label="Zona de peligro" hidden>
+          <div class="s-list">
+            <button type="button" class="s-row s-row--danger" id="deleteAccount">
+              <svg class="ico" aria-hidden="true"><use href="src/icons/icons.svg#i-trash"/></svg>
+              <span class="s-text"><b>Eliminar cuenta</b><small>Cierra tu sesión y borra todo lo guardado en este teléfono. No se puede deshacer.</small></span>
+            </button>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
     <!-- Menú completo (cerrado por defecto: `inert` lo saca del orden de tabulación) -->
     <div class="drawer" id="drawer" aria-label="Menú principal" inert>
       <div class="brand"><span class="name">Deep Op</span></div>
@@ -272,6 +395,33 @@
     </div>
   </div>
 </dialog>
+
+<!-- Ajustes: confirmación antes de borrar y resumen de privacidad (hojas inferiores, como la de overlays). -->
+<dialog class="sheet" id="confirmSheet" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+  <div class="sheet-body">
+    <h2 class="sheet-title" id="confirmTitle"></h2>
+    <p class="sheet-text" id="confirmText"></p>
+    <div class="actions">
+      <button type="button" class="btn btn--secondary" id="confirmNo">Cancelar</button>
+      <button type="button" class="btn btn--danger" id="confirmYes"></button>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="sheet" id="privacySheet" aria-labelledby="privacyTitle">
+  <div class="sheet-body">
+    <h2 class="sheet-title" id="privacyTitle">Privacidad</h2>
+    <p class="sheet-text">Tus videos se procesan en tu dispositivo y no se suben a ningún servidor de Deep Op.</p>
+    <p class="sheet-text">Deep Op guarda en este teléfono: tu sesión (el correo que escribiste), tus preferencias, una copia de la app para usarla sin conexión y el modelo de profundidad una vez descargado.</p>
+    <p class="sheet-text">Para funcionar se conecta a servicios públicos: Google Fonts (tipografía), jsDelivr y Hugging Face (librerías y modelo, solo la primera conversión) y GitHub Pages (overlays). Como en cualquier sitio web, esos servicios ven tu dirección IP.</p>
+    <p class="sheet-text">Puedes borrar todo desde «Borrar mis datos locales».</p>
+    <div class="actions">
+      <button type="button" class="btn btn--primary" id="privacyClose">Entendido</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!-- Pantalla de inicio: cubre la app hasta que termina la animación (ver src/scripts/intro.js).
      Los botones empiezan ocultos: intro.js los muestra solo si no hay sesión iniciada. -->

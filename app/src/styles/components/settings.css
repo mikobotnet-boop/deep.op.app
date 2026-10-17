@@ -1,0 +1,176 @@
+/* ==========================================================================
+   settings.css — pantalla «Ajustes»: cuenta, interruptores, almacenamiento, privacidad.
+
+   Comparte con la página principal (home.css) la capa, el hueco reservado para el menú y la
+   entrada escalonada. Las hojas de confirmación y privacidad son las mismas `.sheet` del catálogo
+   (catalog.css) y los botones, los `.btn` de home.css. Aquí solo está el estado final; el movimiento
+   (interruptor, aviso, entrada de la pantalla) va en motion.css.
+   ========================================================================== */
+
+.settings[hidden] { display: none !important; }
+.settings [hidden] { display: none !important; }
+
+.settings-inner { gap: 22px; max-width: 560px; }   /* una columna de lectura: más ancha no aporta nada */
+
+/* ---------- Cabecera ---------- */
+.settings-head { display: flex; align-items: center; gap: 6px; }
+.settings-head .icon-btn { margin-left: -8px; }
+.settings-title { margin: 0; font-size: 20px; font-weight: 500; }
+.settings-title:focus { outline: none; }          /* solo recibe foco por código, al abrir la pantalla */
+
+/* ---------- Cuenta ---------- */
+.s-me { display: flex; align-items: center; gap: 14px; }
+.s-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-solid);
+  color: #fff;
+  font-size: 24px;
+  font-weight: 500;
+  box-shadow: 0 0 24px var(--glow);
+}
+.s-avatar.is-empty { background: var(--active); color: var(--muted); box-shadow: none; }
+.s-me-text { flex: 1; min-width: 0; }
+.s-me-text b { display: block; font-size: 18px; font-weight: 500; }
+.s-me-text small { display: block; color: var(--muted); font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; }
+/* El enlace va debajo del correo: en un móvil estrecho, a la derecha apretaba el texto en una columna de pocas letras */
+.s-me-text .link-btn { display: inline-flex; align-items: center; min-height: 44px; margin-top: 2px; padding: 0; }
+
+/* ---------- Grupos y filas ---------- */
+.s-group h3 { margin: 0 4px 8px; color: var(--muted); font-size: 15px; font-weight: 500; }
+.s-list {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface-drawer);
+}
+.s-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 62px;
+  padding: 10px 16px;
+  text-align: left;
+}
+.s-row + .s-row { border-top: 1px solid var(--line); }
+.s-row > .ico { color: var(--muted); }
+.s-text { flex: 1; min-width: 0; }
+.s-text b { display: block; font-size: 16px; font-weight: 400; }
+.s-text small { display: block; margin-top: 1px; color: var(--muted); font-size: 13px; line-height: 1.35; }
+.s-chev { width: 18px; height: 18px; color: var(--faint); }
+.s-row:disabled { cursor: not-allowed; }
+.s-row:disabled .sw { opacity: .5; }
+.s-row--danger > .ico,
+.s-row--danger .s-text b { color: var(--red); }
+@media (hover: hover) {
+  button.s-row:not(:disabled):hover { background: var(--surface-hover); }
+}
+
+/* ---------- Tema: selector de tres opciones (debajo del título, a todo el ancho) ---------- */
+.s-row--theme { flex-wrap: wrap; }
+.s-seg {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  flex: 1 1 100%;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--panel);
+}
+.s-seg button { min-height: 40px; border-radius: 10px; color: var(--muted); font-size: 15px; }
+.s-seg button[aria-checked="true"] { background: var(--accent-solid); color: #fff; }
+@media (hover: hover) {
+  .s-seg button[aria-checked="false"]:hover { background: var(--surface-hover); color: var(--text); }
+}
+
+/* ---------- Interruptor (la fila entera es el botón: zona táctil grande) ---------- */
+.sw {
+  position: relative;
+  flex: none;
+  width: 50px;
+  height: 30px;
+  border-radius: 99px;
+  background: var(--faint);
+}
+.sw::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
+}
+.s-row[aria-checked="true"] .sw { background: var(--accent-solid); }
+.s-row[aria-checked="true"] .sw::after { translate: 20px 0; }
+
+/* ---------- Almacenamiento ---------- */
+.s-store { padding: 16px; }
+.s-store-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; }
+.s-store-top b { font-size: 26px; font-weight: 300; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.s-store-top span { color: var(--muted); font-size: 14px; }
+
+.s-meter {
+  display: flex;
+  gap: 3px;
+  height: 12px;
+  margin: 12px 0 14px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--active);
+}
+.s-meter i { display: block; min-width: 6px; border-radius: 99px; }
+
+.c-model { background: var(--violet); }
+.c-app { background: var(--blue); }
+.c-other { background: var(--pink); }
+
+.s-legend { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.s-legend li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.s-legend em { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+.s-legend .is-free em { background: var(--border-hover); }
+.s-legend span { flex: none; margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.s-legend .is-free { margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--line); }
+.s-note { margin: 12px 0 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+.s-store .btn { width: 100%; margin-top: 14px; }
+
+.s-version { margin: 0; color: var(--muted); font-size: 13px; text-align: center; }
+
+/* ---------- Hojas (confirmación y privacidad) ---------- */
+.sheet-text { margin: 10px 0 0; color: var(--muted); font-size: 15px; line-height: 1.45; }
+.sheet-text + .sheet-text { margin-top: 8px; }
+.sheet .actions { margin-top: 20px; }
+.btn--danger { background: var(--danger-solid); color: #fff; }
+@media (hover: hover) {
+  .btn--danger:not(:disabled):hover { background: var(--danger-solid-hover); }
+}
+
+/* ---------- Aviso breve ---------- */
+.toast {
+  position: fixed;
+  right: 0;
+  bottom: calc(var(--dock-bottom) + var(--dock-h) + 16px + var(--safe-bottom));
+  left: 0;
+  z-index: 20;
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin-inline: auto;
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: var(--inverse-bg);
+  color: var(--inverse-text);
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }

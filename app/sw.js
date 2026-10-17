@@ -14,7 +14,7 @@
  * Las rutas son relativas al propio sw.js, así funciona igual en /app/ que en la raíz del sitio.
  */
 
-const VERSION = 'v10';
+const VERSION = 'v12';
 const CACHE = `deepop-${VERSION}`;
 const NETWORK_TIMEOUT_MS = 4000;
 
@@ -33,12 +33,18 @@ const PRECACHE = [
   'src/styles/components/dock.css',
   'src/styles/components/home.css',
   'src/styles/components/catalog.css',
+  'src/styles/components/settings.css',
   'src/styles/components/intro.css',
   'src/scripts/main.js',
   'src/scripts/menu.js',
   'src/scripts/nav.js',
   'src/scripts/home.js',
   'src/scripts/catalog.js',
+  'src/scripts/screens.js',
+  'src/scripts/settings.js',
+  'src/scripts/motion.js',
+  'src/scripts/theme.js',
+  'src/scripts/notify.js',
   'src/overlays/catalog.json',
   'src/depthstyle/index.js',
   'src/depthstyle/config.js',
@@ -78,6 +84,17 @@ self.addEventListener('activate', (event) => {
         keys.filter((k) => k.startsWith('deepop-') && k !== CACHE).map((k) => caches.delete(k))
       ))
       .then(() => self.clients.claim())
+  );
+});
+
+// Al tocar el aviso de «conversión terminada» (notify.js) se vuelve a la app, que ya esté abierta o no.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windows) => {
+      const open = windows.find((w) => w.url.startsWith(self.registration.scope));
+      return open ? open.focus() : self.clients.openWindow(self.registration.scope);
+    })
   );
 });
 

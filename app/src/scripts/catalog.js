@@ -1,9 +1,9 @@
 /**
  * catalog.js — pantalla «Overlays»: catálogo con búsqueda, categorías y hoja de detalle.
  *
- *  - Navegación: la pantalla ocupa el lugar de la página principal (ambas viven en `.stage`; se
- *    alterna con `hidden`). Se abre con el ítem «Overlays» del menú o con «Explorar Overlays»;
- *    «Inicio» (menú) y la pestaña Inicio del dock vuelven a la página principal.
+ *  - Navegación: la pantalla ocupa el lugar de la página principal (todas viven en `.stage`; el
+ *    enrutador screens.js alterna cuál se ve). Se abre con el ítem «Overlays» del menú o con «Explorar
+ *    Overlays»; «Inicio» (menú) y la pestaña Inicio del dock vuelven a la página principal.
  *  - Datos: `src/overlays/catalog.json` (ver el README de esa carpeta). Se pide la primera vez que
  *    se abre la pantalla, no al arrancar la app. `base` permite apuntar los archivos a otro sitio
  *    (por ejemplo, otro repositorio de GitHub Pages) sin tocar el código.
@@ -20,6 +20,8 @@
  *
  * Todo el texto del catálogo se inserta con textContent (nunca como HTML).
  */
+
+import { motion } from './motion.js';
 
 const CATALOG_URL = new URL('../overlays/catalog.json', import.meta.url);
 const PAGE_SIZE = 10;                     // overlays por página (par: la cuadrícula del móvil es de 2 columnas)
@@ -49,10 +51,9 @@ function make(tag, className, text) {
   return el;
 }
 
-export function initCatalog({ app, menu, nav }) {
-  const home = app.querySelector('#home');
+export function initCatalog({ app, menu, nav, screens }) {
   const root = app.querySelector('#catalog');
-  if (!home || !root) return null;
+  if (!root) return null;
 
   const $ = (id) => root.querySelector(`#${id}`);
   const title = $('catalogTitle');
@@ -69,7 +70,6 @@ export function initCatalog({ app, menu, nav }) {
   const pagerNext = $('pagerNext');
 
   const mobile = window.matchMedia(MOBILE_QUERY);
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   // Entrada escalonada de los bloques (la regla está en motion.css)
   [...root.querySelector('.catalog-inner').children].forEach((el, i) => el.style.setProperty('--i', i));
@@ -82,21 +82,23 @@ export function initCatalog({ app, menu, nav }) {
 
   function showCatalog() {
     if (mobile.matches && menu.isOpen()) menu.close();   // en el móvil el menú se superpone: se aparta
-    if (!root.hidden) return;
-    home.hidden = true;
-    root.hidden = false;
-    root.scrollTop = 0;
-    title.focus({ preventScroll: true });
-    if (state.phase === 'idle' || state.phase === 'error') load();
+    screens.show('catalog');
   }
 
   function showHome() {
     if (mobile.matches && menu.isOpen()) menu.close();
-    if (root.hidden) return;
-    cancelPreviews();                       // fuera del catálogo no queda ninguna descarga en marcha
-    root.hidden = true;
-    home.hidden = false;
+    screens.show('home');
   }
+
+  // Lo que hay que hacer al entrar y al salir, vengas de donde vengas (menú, «Explorar», Volver de Ajustes…).
+  screens.onChange((name, previous) => {
+    if (previous === 'catalog') cancelPreviews();       // fuera del catálogo no queda ninguna descarga en marcha
+    if (name !== 'catalog') return;
+    root.scrollTop = 0;
+    title.focus({ preventScroll: true });
+    if (state.phase === 'idle' || state.phase === 'error') load();
+    else if (state.phase === 'ready') renderPage();     // lo que quedó a medias al salir se vuelve a pedir (los cuadros ya vistos no)
+  });
 
   // En fase de captura, para que la página principal ya esté visible cuando otros botones
   // (como «+», que abre el panel de proyecto) busquen sus elementos.
@@ -433,7 +435,7 @@ export function initCatalog({ app, menu, nav }) {
       });
       video.src = o.videoUrl;
       preview.replaceChildren(...(still ? [still, video] : [video]));
-      if (!reduceMotion.matches) video.play().catch(() => {});
+      if (!motion.reduced()) video.play().catch(() => {});
     } else if (o.thumbUrl) {
       const img = new Image();
       img.alt = '';

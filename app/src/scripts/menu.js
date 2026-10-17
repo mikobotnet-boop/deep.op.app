@@ -11,10 +11,10 @@
  */
 
 import { storage, KEYS } from './storage.js';
+import { motion } from './motion.js';
 
 /** Debe coincidir con el breakpoint de rail.css. */
 const MOBILE_QUERY = '(max-width: 760px)';
-const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
 /** Si `transitionend` no llega (p. ej. pestaña en segundo plano), se limpia igualmente. */
 const ANIMATION_FALLBACK_MS = 700;
@@ -29,7 +29,6 @@ function indexForStagger(container, selector) {
 
 export function initMenu({ app, drawer, handle, rail }) {
   const mobile = window.matchMedia(MOBILE_QUERY);
-  const reducedMotion = window.matchMedia(REDUCED_MOTION_QUERY);
   let animationTimer = 0;
 
   indexForStagger(drawer, '.brand .name, .label, .item');
@@ -62,7 +61,7 @@ export function initMenu({ app, drawer, handle, rail }) {
   }
 
   function startAnimating() {
-    if (reducedMotion.matches) return;
+    if (motion.reduced()) return;
     app.classList.add('is-animating');
     clearTimeout(animationTimer);
     animationTimer = setTimeout(endAnimating, ANIMATION_FALLBACK_MS);
@@ -90,7 +89,7 @@ export function initMenu({ app, drawer, handle, rail }) {
     if (persist && !mobile.matches) storage.set(KEYS.menuClosed, open ? '0' : '1');
 
     // Sin animación (movimiento reducido) no habrá `transitionend`: se sincroniza ya.
-    if (animate && reducedMotion.matches) syncHandleHover();
+    if (animate && motion.reduced()) syncHandleHover();
   }
 
   /* ---------- Estado inicial (sin animar) ---------- */

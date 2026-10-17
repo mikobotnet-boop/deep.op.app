@@ -206,9 +206,11 @@
      ------------------------------------------------------------------------ */
   @media (min-width: 761px) {
     .home-inner,
-    .catalog-inner { transition: translate var(--dur-menu-close) var(--ease-in-out); }
+    .catalog-inner,
+    .settings-inner { transition: translate var(--dur-menu-close) var(--ease-in-out); }
     .app.open .home-inner,
-    .app.open .catalog-inner { transition: translate var(--dur-menu-open) var(--ease-out); }
+    .app.open .catalog-inner,
+    .app.open .settings-inner { transition: translate var(--dur-menu-open) var(--ease-out); }
   }
 
   /* ------------------------------------------------------------------------
@@ -262,6 +264,35 @@
   .sheet[open] { animation: panel-in var(--dur-base) var(--ease-out) backwards; }
   .sheet[open]::backdrop { animation: fade-in var(--dur-base) var(--ease-standard) backwards; }
 
+  /* ------------------------------------------------------------------------
+     Ajustes: entrada en cascada como el catálogo, interruptor y aviso breve.
+     settings.js numera los bloques en --i; la regla se relanza cada vez que se muestra la pantalla.
+     ------------------------------------------------------------------------ */
+  html:not(.preload) .settings-inner > :not(.settings-head) {
+    animation: rise var(--dur-intro) var(--ease-out) calc(var(--i, 0) * var(--stagger) * 2 + 80ms) backwards;
+  }
+  html:not(.preload) .settings-head {
+    animation: fade-in var(--dur-base) var(--ease-standard) backwards;
+  }
+
+  .s-row {
+    transition:
+      background-color var(--dur-fast) var(--ease-standard),
+      scale var(--dur-instant) var(--ease-out);
+  }
+  button.s-row:not(:disabled):active { scale: .99; }
+
+  /* Interruptor: el fondo cambia de color y la bolita se desliza (translate) con un leve rebote */
+  .sw { transition: background-color var(--dur-base) var(--ease-standard); }
+  .sw::after { transition: translate var(--dur-base) var(--ease-spring); }
+
+  /* Aviso breve: sube con un fundido y se va igual */
+  .toast {
+    translate: 0 12px;
+    transition: opacity var(--dur-base) var(--ease-standard), translate var(--dur-base) var(--ease-out);
+  }
+  .toast.show { translate: 0 0; }
+
   /* El panel de proyecto se despliega con un fundido y un leve ascenso */
   html:not(.preload) .home-inner > .project { animation: panel-in var(--dur-base) var(--ease-out) backwards; }
 
@@ -312,10 +343,16 @@
       color var(--dur-fast) var(--ease-standard);
   }
 
-  /* Catálogo: la pantalla, la hoja y su velo se funden */
+  /* Catálogo y Ajustes: la pantalla, la hoja y su velo se funden */
   .catalog-inner,
+  .settings-inner,
   .sheet[open],
   .sheet[open]::backdrop { animation: fade-in var(--dur-fade) var(--ease-standard) backwards; }
+
+  /* Ajustes: el interruptor y el aviso solo cambian de color / opacidad */
+  .sw { transition: background-color var(--dur-fast) var(--ease-standard); }
+  .s-row { transition: background-color var(--dur-fast) var(--ease-standard); }
+  .toast { transition: opacity var(--dur-fade) var(--ease-standard); }
 
   /* Ítem activo: el fondo y el color cambian con un fundido corto */
   .item {
@@ -336,4 +373,17 @@
       opacity var(--dur-fast) var(--ease-standard),
       scale 0s;
   }
+}
+
+/* ==========================================================================
+   Interruptor «Reducir animaciones» de Ajustes (motion.js pone la clase en <html>).
+   Es independiente de la preferencia del sistema: con el interruptor activo no hay ninguna
+   transición ni animación, ni siquiera fundidos. Los componentes ya definen su estado final
+   sin movimiento (fase 1), así que todo queda en su sitio, solo que de golpe.
+   ========================================================================== */
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation: none !important;
+  transition: none !important;
 }

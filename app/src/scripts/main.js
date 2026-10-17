@@ -4,8 +4,10 @@
 
 import { initMenu } from './menu.js';
 import { initNav } from './nav.js';
+import { initScreens } from './screens.js';
 import { initHome } from './home.js';
 import { initCatalog } from './catalog.js';
+import { initSettings } from './settings.js';
 import { initIntro } from './intro.js';
 import { registerServiceWorker } from './pwa.js';
 
@@ -24,6 +26,11 @@ const menu = initMenu({
 
 const nav = initNav({ app });
 
+// Qué pantalla se ve (Inicio, Overlays o Ajustes). Al cambiar, el menú marca su ítem como activo.
+const screens = initScreens({ app });
+const ITEM_OF = { home: 'Inicio', catalog: 'Overlays', settings: 'Ajustes' };
+screens.onChange((name) => nav.selectItem(ITEM_OF[name]));
+
 // La página principal no es imprescindible para arrancar: si fallara, la app sigue funcionando.
 try {
   initHome({ app });
@@ -33,9 +40,16 @@ try {
 
 // El catálogo de overlays tampoco es imprescindible para arrancar.
 try {
-  initCatalog({ app, menu, nav });
+  initCatalog({ app, menu, nav, screens });
 } catch (err) {
   console.warn('[catalog] no se pudo iniciar:', err);
+}
+
+// Ajustes tampoco es imprescindible para arrancar.
+try {
+  initSettings({ app, menu, screens });
+} catch (err) {
+  console.warn('[settings] no se pudo iniciar:', err);
 }
 
 /*

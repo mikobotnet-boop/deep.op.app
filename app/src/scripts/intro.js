@@ -17,12 +17,13 @@
  */
 
 import { session } from './session.js';
+import { motion } from './motion.js';
 
 /* =========================================================
    Ajustes
    ========================================================= */
 
-/** true = con «reducir movimiento» activado en el sistema no hay animación (pose final fija). */
+/** true = con «reducir movimiento» activado (en el sistema o en Ajustes) no hay animación (pose final fija). */
 const RESPECT_REDUCED_MOTION = true;
 
 // Línea de tiempo del logotipo (segundos)
@@ -91,8 +92,7 @@ export function initIntro({ onEnter }) {
   const errorBox = $('.intro-error');
   const loginBtn = $('[data-action="login"]');
 
-  const reduce = RESPECT_REDUCED_MOTION &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduce = RESPECT_REDUCED_MOTION && motion.reduced();
   const signedIn = session.isSignedIn();
 
   /* ---------- Logotipo D ----------

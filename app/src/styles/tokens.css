@@ -25,12 +25,17 @@
   --logo: #fff;
   --inverse-bg: #fff;          /* superficie clara sobre fondo oscuro: tooltips e insignias */
   --inverse-text: #111;
+  --dock-active: #fff;         /* icono de la pestaña activa o con el puntero encima */
+  --hover-soft: rgba(255, 255, 255, .05);   /* velo de hover sobre el drawer */
 
   /* ---------- Color: acentos ---------- */
   --violet: #7c5cff;
   --violet-soft: #a78bfa;
   --pink: #e84fb4;
   --red: #f0454f;
+  --blue: #4fa3f7;             /* segmento «copia de la app» del medidor de almacenamiento (Ajustes) */
+  --danger-solid: #d8343e;     /* fondo de botones destructivos: texto blanco con contraste ≥ 4,5 */
+  --danger-solid-hover: #e0434d;
   --glow: rgba(124, 92, 255, .45);
 
   /* ---------- Color: tirador (handle) ---------- */
@@ -43,6 +48,7 @@
   --border-strong: #3a3c42;       /* bordes discontinuos de las zonas de carga */
   --hero-shade: linear-gradient(to top, rgba(0, 0, 0, .72) 0%, rgba(0, 0, 0, .4) 50%, transparent 100%);
   --shadow-card: 0 4px 24px rgba(0, 0, 0, .35);
+  --shadow-dock: 0 18px 40px rgba(0, 0, 0, .55), 0 2px 0 rgba(255, 255, 255, .03) inset;
   --badge-media: rgba(0, 0, 0, .55);   /* fondo de las insignias sobre imágenes y video (número, duración) */
   --scrim: rgba(0, 0, 0, .6);          /* velo detrás de una hoja modal */
 
@@ -110,4 +116,47 @@
   --ease-in-out: cubic-bezier(.65, 0, .35, 1);     /* salidas y movimientos simétricos */
   --ease-standard: cubic-bezier(.4, 0, .2, 1);     /* cambios de color/opacidad */
   --ease-spring: cubic-bezier(.34, 1.56, .64, 1);  /* rebote leve: pulsaciones y pops */
+}
+
+/* ==========================================================================
+   Tema claro. theme.js pone data-theme="light" en <html> cuando el usuario elige «Claro»
+   (o «Sistema» y el teléfono está en claro). Solo se redefinen valores: ninguna regla.
+   Sin JavaScript o sin preferencia, la app es oscura (valores de :root).
+   Las superficies sobre imagen o video (sombra del hero, insignias, velo) siguen oscuras
+   a propósito: el texto blanco que llevan encima necesita ese fondo en los dos temas.
+   ========================================================================== */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --frame: #e8e8ee;
+  --panel: #fff;
+  --surface-drawer: #f1f1f5;
+  --surface-dock: #ececf1;
+  --surface-hover: #e8e8ee;
+  --line: #e3e3e9;
+  --active: #e4e4eb;
+  --border-hover: #d3d3db;
+
+  --text: #16171a;
+  --muted: #5d5f66;
+  --faint: #7a7c83;            /* contraste ≥ 3:1 sobre blanco y sobre --surface-drawer (iconos y bordes de controles) */
+  --dock-icon: #5d5f66;
+  --dock-active: #16171a;
+  --hover-soft: rgba(0, 0, 0, .05);
+  --on-accent: #5b3fe0;
+  --logo: #16171a;
+  --inverse-bg: #16171a;
+  --inverse-text: #fff;
+
+  --violet-soft: #5b3fe0;      /* texto e iconos de acento: contraste ≥ 4,5 sobre las superficies claras */
+  --red: #d12a35;
+  --blue: #2f86e0;
+  --glow: rgba(124, 92, 255, .35);
+
+  --handle: #b9bbc3;
+  --handle-hover: #16171a;
+
+  --border-strong: #c3c3cc;
+  --shadow-card: 0 4px 24px rgba(30, 30, 60, .12);
+  --shadow-dock: 0 14px 34px rgba(30, 30, 60, .18), 0 2px 0 rgba(255, 255, 255, .6) inset;
 }

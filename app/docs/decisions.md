@@ -156,6 +156,14 @@ Registro breve de las decisiones tomadas al separar el HTML original (un solo ar
 
 **Pendiente de este punto.** Los videos de prueba (Deep.op002–008, H.264 con faststart) están en el repo de videos. Falta confirmar con los MP4 reales cuánto baja cada vista previa. Límite a vigilar: GitHub Pages recomienda sitios de hasta 1 GB y el historial de git crece con cada versión de un video; con los 100 videos reales habrá que revisar el tamaño total.
 
+## D21. Tema Oscuro / Claro / Sistema
+
+**Decisión.** Ajustes → Apariencia → Tema con tres opciones. Por defecto **Oscuro** (la app nació oscura); «Sistema» sigue al teléfono y reacciona si cambia con la app abierta. La preferencia se guarda en `deepop-theme` (el valor por defecto no se guarda).
+
+**Cómo.** `theme.js` escribe `<html data-theme="dark|light">` y actualiza `theme-color` y `color-scheme`. `tokens.css` redefine solo valores bajo `:root[data-theme="light"]` (ninguna regla); el resto de CSS ya usaba tokens. Un script mínimo en `index.html` aplica el tema antes del primer pintado para que no parpadee (mismas reglas que `theme.js`). Valores claros tomados del diseño de Ajustes (`#e8e8ee` marco, `#fff` panel, `#f1f1f5` tarjetas, acento `#6a4bf0`), con `--violet-soft` y `--red` oscurecidos para llegar a contraste 4,5:1 como texto.
+
+**Detalles.** La pantalla de inicio (intro) es siempre oscura: es una pieza de marca con fondo propio. Lo que va sobre imagen o video (sombra del hero, insignias, velo de las hojas) sigue oscuro en los dos temas. En pantallas estrechas el texto del carrusel va debajo del video, así que usa `--text`. Nuevos tokens: `--dock-active`, `--hover-soft`, `--shadow-dock`. `manifest.webmanifest` conserva `#000000` (no puede cambiar en tiempo de ejecución).
+
 ## Pendiente / deuda conocida
 
 - **Menú duplicado en el HTML.** La barra de iconos y el drawer repiten la misma lista de ítems (como en el original). Cuando la navegación sea real, conviene generarla desde un único arreglo de datos.
