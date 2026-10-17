@@ -164,6 +164,18 @@ Registro breve de las decisiones tomadas al separar el HTML original (un solo ar
 
 **Detalles.** La pantalla de inicio (intro) es siempre oscura: es una pieza de marca con fondo propio. Lo que va sobre imagen o video (sombra del hero, insignias, velo de las hojas) sigue oscuro en los dos temas. En pantallas estrechas el texto del carrusel va debajo del video, así que usa `--text`. Nuevos tokens: `--dock-active`, `--hover-soft`, `--shadow-dock`. `manifest.webmanifest` conserva `#000000` (no puede cambiar en tiempo de ejecución).
 
+## D22. Compresor: preparar videos para TikTok en el dispositivo
+
+**Decisión.** El ítem «Analítica» del menú pasa a llamarse **Compresor** y abre una pantalla propia (`compressor.js`, `compressor.css`; el motor vive en `src/compressor/` con versión propia, como DepthStyle). Primera versión mínima: elegir video → analizar → 1080×1920 con fondo desenfocado o recorte → H.264 con bitrate alto → compartir o descargar.
+
+**Motivo.** TikTok recodifica todo lo que recibe y desde Android suele quedar muy comprimido; no se puede evitar, pero sí entregarle un archivo en el formato que mejor lo sobrevive. El plan original era una app Android nativa (Media3, FFmpegKit); Deep Op es una app web, así que se traduce a WebCodecs. Se descartó ffmpeg.wasm (pesa mucho y es lento en un teléfono) y el codificador por software.
+
+**Cómo.** Para cada instante i/fps se busca el fotograma del original y se dibuja en un lienzo 1080×1920 (`frames.js`); eso normaliza el fps variable a constante sin inventar movimiento. El desenfoque del fondo se hace dibujando en un lienzo 12 veces más pequeño y estirándolo (`ctx.filter` es lento). El codec es el primero soportado de High / Main / Baseline H.264 (`config.js`). El MP4 se arma en memoria con mp4-muxer. Compartir es un botón aparte: `navigator.share` exige un toque justo antes y la compresión puede tardar minutos.
+
+**Límites conocidos.** Hasta 120 s (se busca cada fotograma uno a uno). El navegador decide el tone mapping de un video HDR: no hay control fino. Sin exportación en segundo plano. Que TikTok recomprima menos con 4K («truco 4K») es una hipótesis del plan: hay que medirla con pruebas A/B antes de ofrecerla.
+
+**Pendiente.** Probar en un teléfono Android con videos reales (H.264 y AAC no se pudieron probar en el entorno de desarrollo, cuyo Chromium no los trae), perfiles, nitidez y reducción de ruido leves.
+
 ## Pendiente / deuda conocida
 
 - **Menú duplicado en el HTML.** La barra de iconos y el drawer repiten la misma lista de ítems (como en el original). Cuando la navegación sea real, conviene generarla desde un único arreglo de datos.

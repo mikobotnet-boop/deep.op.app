@@ -7,11 +7,13 @@
 /* Los elementos con `hidden` no deben mostrarse aunque su clase defina `display`. */
 .home [hidden] { display: none !important; }
 
-/* `.catalog` (pantalla de overlays, catalog.css) y `.settings` (Ajustes, settings.css) usan la misma capa,
-   el mismo hueco para el menú y el mismo ancho máximo: las reglas de `.home` / `.home-inner` son también las suyas. */
+/* `.catalog` (pantalla de overlays, catalog.css), `.settings` (Ajustes, settings.css) y `.compressor` (Compresor,
+   compressor.css) usan la misma capa, el mismo hueco para el menú y el mismo ancho máximo: las reglas de `.home` /
+   `.home-inner` son también las suyas. */
 .home,
 .catalog,
-.settings {
+.settings,
+.compressor {
   position: absolute;
   inset: 0;
   z-index: 0;                                   /* el dock (después en el DOM) queda por encima */
@@ -29,7 +31,8 @@
 
 .home-inner,
 .catalog-inner,
-.settings-inner {
+.settings-inner,
+.compressor-inner {
   display: grid;
   grid-template-columns: minmax(0, 1fr);       /* sin esto, la fila de overlays (scroll horizontal) ensancha la columna */
   gap: 18px;
@@ -44,13 +47,16 @@
 @media (min-width: 761px) {
   .home,
   .catalog,
-  .settings { padding-left: calc(var(--drawer-w) + var(--handle-w) + 14px); }
+  .settings,
+  .compressor { padding-left: calc(var(--drawer-w) + var(--handle-w) + 14px); }
   .home-inner,
   .catalog-inner,
-  .settings-inner { translate: calc(var(--drawer-w) / -2) 0; }
+  .settings-inner,
+  .compressor-inner { translate: calc(var(--drawer-w) / -2) 0; }
   .app.open .home-inner,
   .app.open .catalog-inner,
-  .app.open .settings-inner { translate: 0 0; }
+  .app.open .settings-inner,
+  .app.open .compressor-inner { translate: 0 0; }
 }
 
 /* ---------- Carrusel principal ---------- */

@@ -207,10 +207,12 @@
   @media (min-width: 761px) {
     .home-inner,
     .catalog-inner,
-    .settings-inner { transition: translate var(--dur-menu-close) var(--ease-in-out); }
+    .settings-inner,
+    .compressor-inner { transition: translate var(--dur-menu-close) var(--ease-in-out); }
     .app.open .home-inner,
     .app.open .catalog-inner,
-    .app.open .settings-inner { transition: translate var(--dur-menu-open) var(--ease-out); }
+    .app.open .settings-inner,
+    .app.open .compressor-inner { transition: translate var(--dur-menu-open) var(--ease-out); }
   }
 
   /* ------------------------------------------------------------------------
@@ -272,6 +274,15 @@
     animation: rise var(--dur-intro) var(--ease-out) calc(var(--i, 0) * var(--stagger) * 2 + 80ms) backwards;
   }
   html:not(.preload) .settings-head {
+    animation: fade-in var(--dur-base) var(--ease-standard) backwards;
+  }
+
+  /* Compresor: igual que Ajustes (compressor.js numera los bloques en --i). El panel de video se despliega con
+     un fundido y un leve ascenso cuando aparece la vista previa. */
+  html:not(.preload) .compressor-inner > :not(.compressor-head) {
+    animation: rise var(--dur-intro) var(--ease-out) calc(var(--i, 0) * var(--stagger) * 2 + 80ms) backwards;
+  }
+  html:not(.preload) .compressor-head {
     animation: fade-in var(--dur-base) var(--ease-standard) backwards;
   }
 
@@ -346,6 +357,7 @@
   /* Catálogo y Ajustes: la pantalla, la hoja y su velo se funden */
   .catalog-inner,
   .settings-inner,
+  .compressor-inner,
   .sheet[open],
   .sheet[open]::backdrop { animation: fade-in var(--dur-fade) var(--ease-standard) backwards; }
 

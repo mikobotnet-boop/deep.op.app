@@ -1,0 +1,42 @@
+/* ==========================================================================
+   compressor.css — pantalla «Compresor»: elegir video, encuadre, progreso y resultado.
+
+   Comparte con la página principal (home.css) la capa, el hueco reservado para el menú y la entrada
+   escalonada; y reutiliza sus piezas: `.project` (tarjeta), `.drop`, `.preview`, `.status`, `.progress`,
+   `.result`, `.btn`, `.link-btn`, `.tag-version`. El selector de encuadre es el `.s-seg` de Ajustes.
+   Aquí solo está el estado final; el movimiento va en motion.css.
+   ========================================================================== */
+
+.compressor[hidden] { display: none !important; }
+.compressor [hidden] { display: none !important; }
+
+.compressor-inner { gap: 18px; max-width: 560px; }   /* una columna de lectura: más ancha no aporta nada */
+
+/* ---------- Cabecera ---------- */
+.compressor-top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.compressor-title { margin: 0; font-size: 20px; font-weight: 500; }
+.compressor-title:focus { outline: none; }          /* solo recibe foco por código, al abrir la pantalla */
+.compressor-note { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+
+/* ---------- Datos del video ---------- */
+.cmp-info {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 14px;
+  margin: 16px 0 18px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.cmp-info dt { color: var(--muted); }
+.cmp-info dd { margin: 0; overflow-wrap: anywhere; }
+
+/* ---------- Encuadre ---------- */
+.cmp-label { margin: 0 0 8px; color: var(--muted); font-size: 14px; font-weight: 500; }
+.cmp-hint { margin: 10px 0 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.compressor .s-seg { background: var(--panel); }
+.compressor .s-seg button:disabled { cursor: not-allowed; opacity: .6; }
+
+/* ---------- Resultado ---------- */
+.cmp-summary { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.4; text-align: center; font-variant-numeric: tabular-nums; }
+.compressor .result .preview-video { max-height: 420px; margin-inline: auto; }   /* el resultado es vertical: más alto que el recorte */
+.compressor .preview-video { object-fit: contain; }

@@ -31,8 +31,11 @@ export function snapFps(raw, maxFps = OUTPUT_FPS_MAX) {
   return Math.max(10, Math.round(fps));
 }
 
-/** Mide los fps del fragmento [start, end] de `video`. Siempre devuelve un número usable. */
-export async function detectFps(video, start, end) {
+/**
+ * Mide los fps del fragmento [start, end] de `video`. Siempre devuelve un número usable.
+ * `maxFps` es el tope de la salida (por defecto el de DepthStyle; el Compresor pasa el suyo).
+ */
+export async function detectFps(video, start, end, maxFps = OUTPUT_FPS_MAX) {
   if (typeof video.requestVideoFrameCallback !== 'function') return OUTPUT_FPS_DEFAULT;
   const deltas = [];
   // Algunos navegadores no avisan de los fotogramas de un video fuera de la página: se pone dentro,
@@ -64,5 +67,5 @@ export async function detectFps(video, start, end) {
     video.style.cssText = prevStyle;
   }
   const raw = fpsFromIntervals(deltas);
-  return raw === null ? OUTPUT_FPS_DEFAULT : snapFps(raw);
+  return raw === null ? Math.min(OUTPUT_FPS_DEFAULT, maxFps) : snapFps(raw, maxFps);
 }

@@ -14,7 +14,7 @@
  * Las rutas son relativas al propio sw.js, así funciona igual en /app/ que en la raíz del sitio.
  */
 
-const VERSION = 'v12';
+const VERSION = 'v13';
 const CACHE = `deepop-${VERSION}`;
 const NETWORK_TIMEOUT_MS = 4000;
 
@@ -34,6 +34,7 @@ const PRECACHE = [
   'src/styles/components/home.css',
   'src/styles/components/catalog.css',
   'src/styles/components/settings.css',
+  'src/styles/components/compressor.css',
   'src/styles/components/intro.css',
   'src/scripts/main.js',
   'src/scripts/menu.js',
@@ -42,6 +43,7 @@ const PRECACHE = [
   'src/scripts/catalog.js',
   'src/scripts/screens.js',
   'src/scripts/settings.js',
+  'src/scripts/compressor.js',
   'src/scripts/motion.js',
   'src/scripts/theme.js',
   'src/scripts/notify.js',
@@ -56,6 +58,15 @@ const PRECACHE = [
   'src/depthstyle/video.js',
   'src/depthstyle/convert.js',
   'src/depthstyle/version.js',
+  'src/compressor/index.js',
+  'src/compressor/config.js',
+  'src/compressor/version.js',
+  'src/compressor/errors.js',
+  'src/compressor/analyze.js',
+  'src/compressor/frames.js',
+  'src/compressor/audio.js',
+  'src/compressor/encode.js',
+  'src/compressor/share.js',
   'src/scripts/intro.js',
   'src/scripts/session.js',
   'src/scripts/storage.js',

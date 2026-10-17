@@ -1,8 +1,8 @@
 /**
- * screens.js — qué pantalla se ve dentro del panel: Inicio, Overlays (catálogo) o Ajustes.
+ * screens.js — qué pantalla se ve dentro del panel: Inicio, Overlays (catálogo), Compresor o Ajustes.
  *
- * Las tres viven en `.stage` y se alternan con `hidden`. Antes cada pantalla ocultaba a la otra a
- * mano; con tres, un único punto decide cuál se ve y avisa del cambio (`onChange`) para que cada
+ * Todas viven en `.stage` y se alternan con `hidden`. Antes cada pantalla ocultaba a la otra a
+ * mano; con varias, un único punto decide cuál se ve y avisa del cambio (`onChange`) para que cada
  * módulo haga lo suyo (el catálogo cancela sus descargas al salir, Ajustes mide el almacenamiento
  * al entrar, el menú marca el ítem activo).
  *
@@ -13,6 +13,7 @@ export function initScreens({ app }) {
   const screens = {
     home: app.querySelector('#home'),
     catalog: app.querySelector('#catalog'),
+    compressor: app.querySelector('#compressor'),
     settings: app.querySelector('#settings'),
   };
   const listeners = new Set();

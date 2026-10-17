@@ -46,6 +46,7 @@
   <link rel="stylesheet" href="src/styles/components/home.css">
   <link rel="stylesheet" href="src/styles/components/catalog.css">
   <link rel="stylesheet" href="src/styles/components/settings.css">
+  <link rel="stylesheet" href="src/styles/components/compressor.css">
   <link rel="stylesheet" href="src/styles/components/intro.css">
   <!-- Fase 2: se puede quitar esta línea y la app sigue funcionando, solo que sin movimiento -->
   <link rel="stylesheet" href="src/styles/motion.css">
@@ -69,7 +70,7 @@
       <button class="item on" data-tip="Actividad" aria-expanded="true"><svg class="ico"><use href="src/icons/icons.svg#i-chart"/></svg><span class="txt grow">Actividad</span><svg class="chev"><use href="src/icons/icons.svg#i-chevron-up"/></svg></button>
       <div class="sub">
         <button class="item" data-tip="Resumen"><span class="dot v"></span><span class="txt">Resumen</span></button>
-        <button class="item" data-tip="Analítica"><span class="dot p"></span><span class="txt">Analítica</span></button>
+        <button class="item" data-tip="Compresor"><span class="dot p"></span><span class="txt">Compresor</span></button>
         <button class="item" data-tip="Overlays"><span class="dot r"></span><span class="txt">Overlays</span></button>
       </div>
       <button class="item" data-tip="Tareas"><svg class="ico"><use href="src/icons/icons.svg#i-tasks"/></svg><span class="txt">Tareas</span></button>
@@ -343,6 +344,75 @@
       </div>
     </div>
 
+    <!-- Compresor: prepara un video para TikTok. También ocupa el lugar de la página principal (ver src/scripts/compressor.js). -->
+    <div class="compressor" id="compressor" hidden>
+      <div class="compressor-inner">
+
+        <header class="compressor-head">
+          <div class="compressor-top">
+            <h2 class="compressor-title" id="cmpTitle" tabindex="-1">Compresor</h2>
+            <span class="tag-version" id="cmpVersion" title="Versión del Compresor"></span>
+          </div>
+          <p class="compressor-note">Prepara tu video para TikTok: 1080×1920, H.264, fps constantes y bitrate alto. TikTok vuelve a comprimir todo lo que recibe; esto le da el mejor material de partida. Todo ocurre en tu dispositivo: el video no se sube a ningún servidor. <span id="cmpLimit"></span></p>
+        </header>
+
+        <section class="project" aria-label="Video a preparar">
+
+          <!-- Zona de carga -->
+          <label class="drop" id="cmpDrop">
+            <input class="drop-input" type="file" id="cmpInput" accept="video/mp4,video/quicktime,video/webm,video/*">
+            <svg class="ico drop-ico" aria-hidden="true"><use href="src/icons/icons.svg#i-upload"/></svg>
+            <span class="drop-title">Seleccionar video</span>
+            <span class="drop-hint">Arrastra un archivo aquí o elígelo desde tu dispositivo</span>
+            <span class="drop-formats">MP4, MOV o WebM</span>
+          </label>
+
+          <!-- Vista previa, análisis y encuadre -->
+          <div class="preview" id="cmpPreview" hidden>
+            <div class="preview-head">
+              <span class="file-name" id="cmpName"></span>
+              <button type="button" class="link-btn" id="cmpChange">Cambiar archivo</button>
+            </div>
+
+            <video class="preview-video" id="cmpVideo" controls playsinline preload="metadata"></video>
+
+            <dl class="cmp-info">
+              <dt>Original</dt><dd id="cmpInfoOriginal">—</dd>
+              <dt>Duración</dt><dd id="cmpInfoDuration">—</dd>
+              <dt>Salida</dt><dd id="cmpInfoOutput">—</dd>
+            </dl>
+
+            <p class="cmp-label" id="cmpLayoutLabel">Encuadre</p>
+            <div class="s-seg" id="cmpLayout" role="radiogroup" aria-labelledby="cmpLayoutLabel">
+              <button type="button" role="radio" aria-checked="true" data-v="blur">Fondo desenfocado</button>
+              <button type="button" role="radio" aria-checked="false" data-v="crop">Recortar</button>
+            </div>
+            <p class="cmp-hint" id="cmpLayoutHint"></p>
+          </div>
+
+          <p class="status" id="cmpStatus" role="status" aria-live="polite"></p>
+
+          <div class="progress" id="cmpProgressWrap" hidden>
+            <div class="progress-bar" id="cmpProgressBar" role="progressbar" aria-label="Progreso de la compresión" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="progress-fill" id="cmpProgressFill"></span></div>
+          </div>
+
+          <!-- Resultado -->
+          <div class="result" id="cmpResult" hidden>
+            <video class="preview-video" id="cmpResultVideo" controls playsinline loop></video>
+            <p class="cmp-summary" id="cmpSummary"></p>
+            <button type="button" class="btn btn--primary" id="cmpShare" hidden>Compartir</button>
+            <a class="btn btn--secondary" id="cmpDownload" download="deepop-tiktok.mp4">Descargar MP4</a>
+          </div>
+
+          <div class="actions" id="cmpActions" hidden>
+            <button type="button" class="btn btn--secondary" id="cmpCancel">Cancelar</button>
+            <button type="button" class="btn btn--primary" id="cmpProcess" disabled>Preparar para TikTok</button>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
     <!-- Menú completo (cerrado por defecto: `inert` lo saca del orden de tabulación) -->
     <div class="drawer" id="drawer" aria-label="Menú principal" inert>
       <div class="brand"><span class="name">Deep Op</span></div>
@@ -353,7 +423,7 @@
         <button class="item on" data-x="Actividad" aria-expanded="true"><svg class="ico"><use href="src/icons/icons.svg#i-chart"/></svg><span class="txt grow">Actividad</span><svg class="chev"><use href="src/icons/icons.svg#i-chevron-up"/></svg></button>
         <div class="sub">
           <button class="item" data-x="Resumen"><span class="dot v"></span><span class="txt">Resumen</span></button>
-          <button class="item" data-x="Analítica"><span class="dot p"></span><span class="txt">Analítica</span></button>
+          <button class="item" data-x="Compresor"><span class="dot p"></span><span class="txt">Compresor</span></button>
           <button class="item" data-x="Overlays"><span class="dot r"></span><span class="txt">Overlays</span></button>
         </div>
         <button class="item" data-x="Tareas"><svg class="ico"><use href="src/icons/icons.svg#i-tasks"/></svg><span class="txt">Tareas</span></button>

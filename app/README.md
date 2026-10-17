@@ -87,6 +87,16 @@ Es lo primero que se ve al entrar (`home.js` + `home.css`, dentro del panel):
 - **Overlays.** La fila de 5 casillas espera las imágenes: súbelas a `src/overlays/` con los nombres `overlay-1.jpg` … `overlay-5.jpg` (ver el README de esa carpeta). Mientras no estén, cada casilla muestra su número. «Explorar Overlays» abre el catálogo.
 - **Catálogo de overlays** (ítem **Overlays** del menú, antes «Proyectos», o «Explorar Overlays»; `catalog.js` + `catalog.css`). Cuadrícula de 2 columnas con tarjetas 16:9, en páginas de 10 (botones Anterior / Siguiente abajo a la izquierda), con categorías y búsqueda por nombre (sin distinguir tildes). Cada tarjeta muestra el primer cuadro de su video, que se pide solo cuando su página está a la vista. Al tocar una tarjeta se abre una hoja que descarga y reproduce el video completo, con el botón de descarga. La lista sale de `src/overlays/catalog.json` (ver el README de esa carpeta); añadir overlays es añadir líneas a ese archivo.
 
+## Compresor
+
+Ítem **Compresor** del menú (antes «Analítica»; `compressor.js` + `compressor.css`, motor en `src/compressor/`). Prepara un video para subirlo a TikTok, que recomprime todo lo que recibe: le da el mejor material de partida. Todo ocurre en el dispositivo.
+
+- **Flujo.** Elegir el video (hasta 120 s) → se analiza (tamaño, duración, fps) → elegir encuadre (**fondo desenfocado** o **recortar**) → «Preparar para TikTok» → vista previa, **Compartir** (menú del sistema; TikTok aparece ahí si está instalada) y **Descargar MP4**.
+- **Salida.** 1080×1920, H.264 (WebCodecs, hardware del teléfono), fps constantes iguales a los del original (tope 60, sin subirlos), bitrate alto (≈ 15 Mbps a 30 fps; sube o baja según los fps y la duración, con tope de 250 MB), sonido AAC 48 kHz si se puede. Si no hay sonido, se dice por qué.
+- **Versión propia** (`src/compressor/version.js`, rótulo junto al título) y `src/compressor/CHANGELOG.md`. Todos los ajustes están en `src/compressor/config.js`.
+- **Requiere Chrome** (WebCodecs). La primera vez carga `mp4-muxer` de jsDelivr (la misma librería que DepthStyle).
+- **Todavía no.** Perfiles (p. ej. 4K), nitidez y reducción de ruido, conversión HDR → SDR. Exportar con la app en segundo plano no es posible en una app web.
+
 ## Pantalla de inicio y sesión
 
 Al abrir la app se ve primero la pantalla de inicio (`intro.js` + `intro.css`): el logotipo se forma, la bolita se retira y aparece el nombre sobre un fondo de manchas azul y negro.
