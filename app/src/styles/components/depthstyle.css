@@ -1,11 +1,14 @@
 /* ==========================================================================
-   depthstyle.css — pantalla «DepthStyle»: qué es y, después, lo que se añada aquí.
+   depthstyle.css — pantalla «DepthStyle»: convierte un video al formato DepthStyle.
 
-   Usa la misma capa, el mismo hueco para el menú y el mismo ancho máximo que Compresor y Ajustes
-   (los reproduce aquí en lugar de tocar home.css). Solo estado final; el movimiento va en motion.css.
+   Mismo formato que el Compresor: reutiliza `.drop`, `.preview`, `.status`, `.progress`, `.result`,
+   `.actions`, `.btn` y `.cmp-info` (compressor.css). Usa la misma capa, hueco para el menú y ancho
+   máximo que Compresor y Ajustes (las reglas se repiten aquí para no tocar home.css).
+   Solo estado final; el movimiento va en motion.css.
    ========================================================================== */
 
 .depthstyle[hidden] { display: none !important; }
+.depthstyle [hidden] { display: none !important; }
 
 .depthstyle {
   position: absolute;
@@ -29,13 +32,5 @@
 .depthstyle-title:focus { outline: none; }          /* solo recibe foco por código, al abrir la pantalla */
 .depthstyle-note { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
 
-.depthstyle-card {
-  background: var(--panel);
-  border: 1px solid var(--border-hover);
-  border-radius: 14px;
-  padding: 16px;
-  display: grid;
-  gap: 12px;
-}
-.depthstyle-card h3 { margin: 0; font-size: 15px; font-weight: 500; }
-.depthstyle-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.depthstyle .preview-video { object-fit: contain; }
+.depthstyle .result .preview-video { max-height: 420px; margin-inline: auto; }

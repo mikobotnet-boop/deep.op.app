@@ -439,21 +439,58 @@
       </div>
     </div>
 
-    <!-- DepthStyle: página propia (ver src/scripts/depthstyle.js). Sin contenido de Inicio. -->
+    <!-- DepthStyle: página propia, con el mismo formato que el Compresor (ver src/scripts/depthstyle.js). -->
     <div class="depthstyle" id="depthstyle" hidden>
       <div class="depthstyle-inner">
 
         <header class="depthstyle-head">
           <div class="depthstyle-top">
             <h2 class="depthstyle-title" id="dsTitle" tabindex="-1">DepthStyle</h2>
+            <span class="tag-version" id="dsVersion" title="Versión de DepthStyle"></span>
           </div>
-          <p class="depthstyle-note">Efecto de profundidad para tus videos: separa el sujeto del fondo y lo muestra como un mapa de profundidad, donde lo cercano queda oscuro y lo lejano, claro.</p>
+          <p class="depthstyle-note">Convierte un video corto al formato DepthStyle. Hasta 60 s; si el video es más largo, se convierten los primeros 60 s. Todo ocurre en tu dispositivo: el video no se sube a ningún servidor.</p>
         </header>
 
-        <section class="depthstyle-card" aria-label="Qué es DepthStyle">
-          <h3>Cómo funciona</h3>
-          <p>Cada fotograma se analiza para estimar la distancia de cada zona. Con ese mapa, el sujeto se separa del fondo y se puede dejar el texto o los acentos detrás del sujeto.</p>
-          <p>Todo ocurre en tu dispositivo: el video no se sube a ningún servidor.</p>
+        <section class="project" aria-label="Video a convertir">
+
+          <!-- Zona de carga -->
+          <label class="drop" id="dsDrop">
+            <input class="drop-input" type="file" id="dsInput" accept="video/mp4,video/quicktime,video/webm,video/*">
+            <svg class="ico drop-ico" aria-hidden="true"><use href="src/icons/icons.svg#i-upload"/></svg>
+            <span class="drop-title">Seleccionar video</span>
+            <span class="drop-hint">Arrastra un archivo aquí o elígelo desde tu dispositivo</span>
+            <span class="drop-formats">MP4, MOV o WebM</span>
+          </label>
+
+          <!-- Vista previa -->
+          <div class="preview" id="dsPreview" hidden>
+            <div class="preview-head">
+              <span class="file-name" id="dsName"></span>
+              <button type="button" class="link-btn" id="dsChange">Cambiar archivo</button>
+            </div>
+            <video class="preview-video" id="dsVideo" controls playsinline preload="metadata"></video>
+            <dl class="cmp-info">
+              <dt>Duración</dt><dd id="dsInfoDuration">—</dd>
+              <dt>Se convierte</dt><dd id="dsInfoRange">—</dd>
+            </dl>
+          </div>
+
+          <p class="status" id="dsStatus" role="status" aria-live="polite"></p>
+
+          <div class="progress" id="dsProgressWrap" hidden>
+            <div class="progress-bar" id="dsProgressBar" role="progressbar" aria-label="Progreso de la conversión" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="progress-fill" id="dsProgressFill"></span></div>
+          </div>
+
+          <!-- Resultado -->
+          <div class="result" id="dsResult" hidden>
+            <video class="preview-video" id="dsResultVideo" controls playsinline loop></video>
+            <a class="btn btn--primary" id="dsDownload" download="deepop-depthstyle.mp4">Descargar MP4</a>
+          </div>
+
+          <div class="actions" id="dsActions" hidden>
+            <button type="button" class="btn btn--secondary" id="dsCancel">Cancelar</button>
+            <button type="button" class="btn btn--primary" id="dsProcess" disabled>Procesar video</button>
+          </div>
         </section>
 
       </div>
