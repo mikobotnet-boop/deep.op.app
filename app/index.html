@@ -47,6 +47,7 @@
   <link rel="stylesheet" href="src/styles/components/catalog.css">
   <link rel="stylesheet" href="src/styles/components/settings.css">
   <link rel="stylesheet" href="src/styles/components/compressor.css">
+  <link rel="stylesheet" href="src/styles/components/depthstyle.css">
   <link rel="stylesheet" href="src/styles/components/intro.css">
   <!-- Fase 2: se puede quitar esta línea y la app sigue funcionando, solo que sin movimiento -->
   <link rel="stylesheet" href="src/styles/motion.css">
@@ -435,6 +436,26 @@
         <div class="label">Otros</div>
         <button class="item" data-x="Ayuda"><svg class="ico"><use href="src/icons/icons.svg#i-help"/></svg><span class="txt">Ayuda</span></button>
         <button class="item" data-x="Ajustes"><svg class="ico"><use href="src/icons/icons.svg#i-gear"/></svg><span class="txt">Ajustes</span></button>
+      </div>
+    </div>
+
+    <!-- DepthStyle: página propia (ver src/scripts/depthstyle.js). Sin contenido de Inicio. -->
+    <div class="depthstyle" id="depthstyle" hidden>
+      <div class="depthstyle-inner">
+
+        <header class="depthstyle-head">
+          <div class="depthstyle-top">
+            <h2 class="depthstyle-title" id="dsTitle" tabindex="-1">DepthStyle</h2>
+          </div>
+          <p class="depthstyle-note">Efecto de profundidad para tus videos: separa el sujeto del fondo y lo muestra como un mapa de profundidad, donde lo cercano queda oscuro y lo lejano, claro.</p>
+        </header>
+
+        <section class="depthstyle-card" aria-label="Qué es DepthStyle">
+          <h3>Cómo funciona</h3>
+          <p>Cada fotograma se analiza para estimar la distancia de cada zona. Con ese mapa, el sujeto se separa del fondo y se puede dejar el texto o los acentos detrás del sujeto.</p>
+          <p>Todo ocurre en tu dispositivo: el video no se sube a ningún servidor.</p>
+        </section>
+
       </div>
     </div>
 

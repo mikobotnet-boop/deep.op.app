@@ -8,6 +8,7 @@ import { initScreens } from './screens.js';
 import { initHome } from './home.js';
 import { initCatalog } from './catalog.js';
 import { initCompressor } from './compressor.js';
+import { initDepthstyle } from './depthstyle.js';
 import { initSettings } from './settings.js';
 import { initIntro } from './intro.js';
 import { registerServiceWorker } from './pwa.js';
@@ -27,21 +28,10 @@ const menu = initMenu({
 
 const nav = initNav({ app });
 
-// Qué pantalla se ve (Inicio, Overlays, Compresor o Ajustes). Al cambiar, el menú marca su ítem como activo.
+// Qué pantalla se ve (Inicio, Overlays, Compresor, DepthStyle o Ajustes). Al cambiar, el menú marca su ítem como activo.
 const screens = initScreens({ app });
-const ITEM_OF = { home: 'Inicio', catalog: 'Overlays', compressor: 'Compresor', settings: 'Ajustes' };
+const ITEM_OF = { home: 'Inicio', catalog: 'Overlays', compressor: 'Compresor', depthstyle: 'DepthStyle', settings: 'Ajustes' };
 screens.onChange((name) => nav.selectItem(ITEM_OF[name]));
-
-// DepthStyle no tiene pantalla propia: abre en Inicio el convertidor («Crear nuevo proyecto»).
-// Va después de initNav, así que su clic se ejecuta después y el ítem queda marcado.
-app.addEventListener('click', (e) => {
-  const item = e.target.closest('.item');
-  if (!item || !app.contains(item) || (item.dataset.tip ?? item.dataset.x) !== 'DepthStyle') return;
-  screens.show('home');
-  document.getElementById('openProjectPanel')?.click();
-  if (menu.isOpen() && window.matchMedia('(max-width: 760px)').matches) menu.close();
-  nav.selectItem('DepthStyle');
-});
 
 // La página principal no es imprescindible para arrancar: si fallara, la app sigue funcionando.
 try {
@@ -62,6 +52,13 @@ try {
   initCompressor({ app, menu, screens });
 } catch (err) {
   console.warn('[compressor] no se pudo iniciar:', err);
+}
+
+// DepthStyle: página propia (no reutiliza el contenido de Inicio).
+try {
+  initDepthstyle({ app, menu, screens });
+} catch (err) {
+  console.warn('[depthstyle] no se pudo iniciar:', err);
 }
 
 // Ajustes tampoco es imprescindible para arrancar.

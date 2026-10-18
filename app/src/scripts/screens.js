@@ -14,6 +14,7 @@ export function initScreens({ app }) {
     home: app.querySelector('#home'),
     catalog: app.querySelector('#catalog'),
     compressor: app.querySelector('#compressor'),
+    depthstyle: app.querySelector('#depthstyle'),
     settings: app.querySelector('#settings'),
   };
   const listeners = new Set();

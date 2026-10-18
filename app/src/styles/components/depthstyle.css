@@ -1,0 +1,41 @@
+/* ==========================================================================
+   depthstyle.css — pantalla «DepthStyle»: qué es y, después, lo que se añada aquí.
+
+   Usa la misma capa, el mismo hueco para el menú y el mismo ancho máximo que Compresor y Ajustes
+   (los reproduce aquí en lugar de tocar home.css). Solo estado final; el movimiento va en motion.css.
+   ========================================================================== */
+
+.depthstyle[hidden] { display: none !important; }
+
+.depthstyle {
+  position: absolute;
+  inset: 0;
+  z-index: 0;                                   /* el dock (después en el DOM) queda por encima */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-hover) transparent;
+  padding:
+    20px
+    16px
+    calc(var(--dock-bottom) + var(--dock-h) + 32px)
+    calc(var(--handle-w) + 14px);
+}
+
+.depthstyle-inner { gap: 18px; max-width: 560px; }   /* una columna de lectura: más ancha no aporta nada */
+
+.depthstyle-top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.depthstyle-title { margin: 0; font-size: 20px; font-weight: 500; }
+.depthstyle-title:focus { outline: none; }          /* solo recibe foco por código, al abrir la pantalla */
+.depthstyle-note { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+
+.depthstyle-card {
+  background: var(--panel);
+  border: 1px solid var(--border-hover);
+  border-radius: 14px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+.depthstyle-card h3 { margin: 0; font-size: 15px; font-weight: 500; }
+.depthstyle-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
