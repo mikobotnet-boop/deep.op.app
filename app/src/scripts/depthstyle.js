@@ -86,6 +86,8 @@ export function initDepthstyle({ app, menu, screens }) {
   screens.onChange((name) => {
     if (name !== 'depthstyle') return;
     root.scrollTop = 0;
+    // Abre el panel automáticamente al entrar a DepthStyle
+    panel.hidden = false;
     panelTitle.focus({ preventScroll: true });
   });
 
