@@ -439,60 +439,73 @@
       </div>
     </div>
 
-    <!-- DepthStyle: página propia, panel abierto por defecto. -->
+    <!-- DepthStyle: página propia, igual que Inicio (con timeline de recorte). -->
     <div class="depthstyle" id="depthstyle" hidden>
       <div class="depthstyle-inner">
 
-        <!-- Panel abierto por defecto -->
-        <section class="project" id="dsPanel" aria-labelledby="dsPanelTitle">
+        <!-- Panel proyecto (igual que en Inicio, abierto por defecto) -->
+        <section class="project" id="dsProjectPanel" aria-labelledby="dsProjectTitle">
           <div class="project-head">
-            <h2 class="project-title" id="dsPanelTitle" tabindex="-1">Nuevo proyecto</h2>
+            <h2 class="project-title" id="dsProjectTitle" tabindex="-1">Nuevo proyecto</h2>
             <span class="tag-version" id="dsVersion" title="Versión de DepthStyle"></span>
           </div>
-          <p class="project-note">Convierte un video corto al formato DepthStyle. Hasta 60 s; si el video es más largo, se convierten los primeros 60 s. Todo ocurre en tu dispositivo: el video no se sube a ningún servidor separado al igual que el Compresor.</p>
-
-          <!-- Video a convertir -->
-          <div aria-label="Video a convertir">
+          <p class="project-note">Convierte un video corto al formato DepthStyle. Elige un video, recorta un fragmento de hasta 60 s y conviértelo a DepthStyle. Todo ocurre en tu dispositivo: el video no se sube a ningún servidor.</p>
 
           <!-- Zona de carga -->
-          <label class="drop" id="dsDrop">
-            <input class="drop-input" type="file" id="dsInput" accept="video/mp4,video/quicktime,video/webm,video/*">
+          <label class="drop" id="dsUploadArea">
+            <input class="drop-input" type="file" id="dsVideoInput" accept="video/mp4,video/quicktime,video/webm,video/*">
             <svg class="ico drop-ico" aria-hidden="true"><use href="src/icons/icons.svg#i-upload"/></svg>
             <span class="drop-title">Seleccionar video</span>
             <span class="drop-hint">Arrastra un archivo aquí o elígelo desde tu dispositivo</span>
             <span class="drop-formats">MP4, MOV o WebM</span>
           </label>
 
-          <!-- Vista previa -->
-          <div class="preview" id="dsPreview" hidden>
+          <!-- Vista previa y recorte (igual que en Inicio) -->
+          <div class="preview" id="dsVideoPreview" hidden>
             <div class="preview-head">
-              <span class="file-name" id="dsName"></span>
-              <button type="button" class="link-btn" id="dsChange">Cambiar archivo</button>
+              <span class="file-name" id="dsVideoName"></span>
+              <button type="button" class="link-btn" id="dsChangeFileBtn">Cambiar archivo</button>
             </div>
-            <video class="preview-video" id="dsVideo" controls playsinline preload="metadata"></video>
-            <dl class="cmp-info">
-              <dt>Duración</dt><dd id="dsInfoDuration">—</dd>
-              <dt>Se convierte</dt><dd id="dsInfoRange">—</dd>
-            </dl>
+
+            <video class="preview-video" id="dsPreviewVideo" controls playsinline preload="metadata"></video>
+
+            <p class="trim-hint">Elige el fragmento del video que quieres usar (máximo 60 segundos).</p>
+
+            <div class="timeline">
+              <div class="track" id="dsTimelineTrack">
+                <div class="track-bg"><div class="range" id="dsTimelineSelected"></div></div>
+                <div class="thumb" id="dsHandleStart" role="slider" tabindex="0" aria-label="Inicio del fragmento"></div>
+                <div class="thumb" id="dsHandleEnd" role="slider" tabindex="0" aria-label="Fin del fragmento"></div>
+              </div>
+              <div class="time-scale" aria-hidden="true">
+                <span>0:00</span>
+                <span id="dsTotalDurationLabel">0:00</span>
+              </div>
+              <div class="time-row">
+                <span id="dsStartTimeLabel">0:00</span>
+                <span id="dsSelectedDurationLabel">Duración seleccionada: 0 s</span>
+                <span id="dsEndTimeLabel">0:00</span>
+              </div>
+              <p class="warn" id="dsDurationWarning" role="alert" hidden>El fragmento seleccionado supera el límite de 60 segundos.</p>
+            </div>
           </div>
 
-          <p class="status" id="dsStatus" role="status" aria-live="polite"></p>
+          <p class="status" id="dsStatusMessage" role="status" aria-live="polite"></p>
 
           <div class="progress" id="dsProgressWrap" hidden>
             <div class="progress-bar" id="dsProgressBar" role="progressbar" aria-label="Progreso de la conversión" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="progress-fill" id="dsProgressFill"></span></div>
           </div>
 
-          <!-- Resultado -->
-          <div class="result" id="dsResult" hidden>
+          <!-- Resultado de la conversión -->
+          <div class="result" id="dsResultBox" hidden>
             <video class="preview-video" id="dsResultVideo" controls playsinline loop></video>
-            <a class="btn btn--primary" id="dsDownload" download="deepop-depthstyle.mp4">Descargar MP4</a>
+            <a class="btn btn--primary" id="dsDownloadLink" download="deepop-depthstyle.mp4">Descargar MP4</a>
           </div>
 
-          <div class="actions" id="dsActions" hidden>
-            <button type="button" class="btn btn--secondary" id="dsCancel">Cancelar</button>
-            <button type="button" class="btn btn--primary" id="dsProcess" disabled>Procesar video</button>
+          <div class="actions">
+            <button type="button" class="btn btn--secondary" id="dsCancelBtn">Cancelar</button>
+            <button type="button" class="btn btn--primary" id="dsProcessBtn" disabled>Procesar video</button>
           </div>
-          </div><!-- cierra aria-label="Video a convertir" -->
         </section>
 
       </div>
