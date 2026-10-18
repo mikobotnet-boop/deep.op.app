@@ -32,6 +32,17 @@ const screens = initScreens({ app });
 const ITEM_OF = { home: 'Inicio', catalog: 'Overlays', compressor: 'Compresor', settings: 'Ajustes' };
 screens.onChange((name) => nav.selectItem(ITEM_OF[name]));
 
+// DepthStyle no tiene pantalla propia: abre en Inicio el convertidor («Crear nuevo proyecto»).
+// Va después de initNav, así que su clic se ejecuta después y el ítem queda marcado.
+app.addEventListener('click', (e) => {
+  const item = e.target.closest('.item');
+  if (!item || !app.contains(item) || (item.dataset.tip ?? item.dataset.x) !== 'DepthStyle') return;
+  screens.show('home');
+  document.getElementById('openProjectPanel')?.click();
+  if (menu.isOpen() && window.matchMedia('(max-width: 760px)').matches) menu.close();
+  nav.selectItem('DepthStyle');
+});
+
 // La página principal no es imprescindible para arrancar: si fallara, la app sigue funcionando.
 try {
   initHome({ app });
