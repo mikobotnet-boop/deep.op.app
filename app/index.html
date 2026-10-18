@@ -439,19 +439,26 @@
       </div>
     </div>
 
-    <!-- DepthStyle: página propia, con el mismo formato que el Compresor (ver src/scripts/depthstyle.js). -->
+    <!-- DepthStyle: página propia, con botón "Crear nuevo proyecto" que abre un panel. -->
     <div class="depthstyle" id="depthstyle" hidden>
       <div class="depthstyle-inner">
 
-        <header class="depthstyle-head">
-          <div class="depthstyle-top">
-            <h2 class="depthstyle-title" id="dsTitle" tabindex="-1">DepthStyle</h2>
+        <!-- Botón Crear nuevo proyecto -->
+        <button type="button" class="create-btn" id="dsOpenPanel" aria-controls="dsPanel">
+          <span class="create-btn-icon" aria-hidden="true"><svg class="ico"><use href="src/icons/icons.svg#i-plus"/></svg></span>
+          Crear nuevo proyecto
+        </button>
+
+        <!-- Panel que se abre al pulsar el botón -->
+        <section class="project" id="dsPanel" aria-labelledby="dsPanelTitle" hidden>
+          <div class="project-head">
+            <h2 class="project-title" id="dsPanelTitle" tabindex="-1">Nuevo proyecto</h2>
             <span class="tag-version" id="dsVersion" title="Versión de DepthStyle"></span>
           </div>
-          <p class="depthstyle-note">Convierte un video corto al formato DepthStyle. Hasta 60 s; si el video es más largo, se convierten los primeros 60 s. Todo ocurre en tu dispositivo: el video no se sube a ningún servidor.</p>
-        </header>
+          <p class="project-note">Convierte un video corto al formato DepthStyle. Hasta 60 s; si el video es más largo, se convierten los primeros 60 s. Todo ocurre en tu dispositivo: el video no se sube a ningún servidor.</p>
 
-        <section class="project" aria-label="Video a convertir">
+          <!-- Video a convertir -->
+          <div aria-label="Video a convertir">
 
           <!-- Zona de carga -->
           <label class="drop" id="dsDrop">
@@ -491,6 +498,7 @@
             <button type="button" class="btn btn--secondary" id="dsCancel">Cancelar</button>
             <button type="button" class="btn btn--primary" id="dsProcess" disabled>Procesar video</button>
           </div>
+          </div><!-- cierra aria-label="Video a convertir" -->
         </section>
 
       </div>

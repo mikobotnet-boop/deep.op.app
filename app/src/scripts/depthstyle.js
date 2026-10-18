@@ -37,7 +37,9 @@ export function initDepthstyle({ app, menu, screens }) {
   const mobile = window.matchMedia(MOBILE_QUERY);
   const $ = (id) => document.getElementById(id);
 
-  const title = $('dsTitle');
+  const openBtn = $('dsOpenPanel');
+  const panel = $('dsPanel');
+  const panelTitle = $('dsPanelTitle');
   const version = $('dsVersion');
   const drop = $('dsDrop');
   const input = $('dsInput');
@@ -84,7 +86,16 @@ export function initDepthstyle({ app, menu, screens }) {
   screens.onChange((name) => {
     if (name !== 'depthstyle') return;
     root.scrollTop = 0;
-    title.focus({ preventScroll: true });
+    panelTitle.focus({ preventScroll: true });
+  });
+
+  /* ----- Panel Crear proyecto ----- */
+
+  openBtn.addEventListener('click', () => {
+    panel.hidden = !panel.hidden;
+    if (!panel.hidden) {
+      panelTitle.focus({ preventScroll: true });
+    }
   });
 
   /* ----- Elegir el video ----- */
@@ -293,5 +304,7 @@ export function initDepthstyle({ app, menu, screens }) {
     showPreview(false);
     processBtn.disabled = true;
     setStatus('');
+    // Cierra el panel cuando se cancela
+    panel.hidden = true;
   });
 }
