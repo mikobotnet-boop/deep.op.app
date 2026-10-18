@@ -439,23 +439,17 @@
       </div>
     </div>
 
-    <!-- DepthStyle: página propia, con botón "Crear nuevo proyecto" que abre un panel. -->
+    <!-- DepthStyle: página propia, panel abierto por defecto. -->
     <div class="depthstyle" id="depthstyle" hidden>
       <div class="depthstyle-inner">
 
-        <!-- Botón Crear nuevo proyecto -->
-        <button type="button" class="create-btn" id="dsOpenPanel" aria-controls="dsPanel">
-          <span class="create-btn-icon" aria-hidden="true"><svg class="ico"><use href="src/icons/icons.svg#i-plus"/></svg></span>
-          Crear nuevo proyecto
-        </button>
-
-        <!-- Panel que se abre al pulsar el botón -->
-        <section class="project" id="dsPanel" aria-labelledby="dsPanelTitle" hidden>
+        <!-- Panel abierto por defecto -->
+        <section class="project" id="dsPanel" aria-labelledby="dsPanelTitle">
           <div class="project-head">
             <h2 class="project-title" id="dsPanelTitle" tabindex="-1">Nuevo proyecto</h2>
             <span class="tag-version" id="dsVersion" title="Versión de DepthStyle"></span>
           </div>
-          <p class="project-note">Convierte un video corto al formato DepthStyle. Hasta 60 s; si el video es más largo, se convierten los primeros 60 s. Todo ocurre en tu dispositivo: el video no se sube a ningún servidor.</p>
+          <p class="project-note">Convierte un video corto al formato DepthStyle. Hasta 60 s; si el video es más largo, se convierten los primeros 60 s. Todo ocurre en tu dispositivo: el video no se sube a ningún servidor separado al igual que el Compresor.</p>
 
           <!-- Video a convertir -->
           <div aria-label="Video a convertir">
